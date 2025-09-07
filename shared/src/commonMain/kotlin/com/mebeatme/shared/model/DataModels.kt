@@ -30,15 +30,19 @@ data class Score(
 )
 
 @Serializable
-enum class DistanceBucket(val minKm: Double, val maxKm: Double) {
-    SHORT_SPRINT(0.0, 1.0),
-    SPRINT(1.0, 3.0),
-    SHORT_RUN(3.0, 8.0),
-    MEDIUM_RUN(8.0, 15.0),
-    LONG_RUN(15.0, 25.0),
-    ULTRA_RUN(25.0, Double.MAX_VALUE);
-    
+enum class DistanceBucket(val minKm: Double, val maxKm: Double, val label: String) {
+    SHORT_SPRINT(0.0, 1.0, "Short sprint"),
+    SPRINT(1.0, 3.0, "Sprint"),
+    SHORT_RUN(3.0, 8.0, "Short run"),
+    MEDIUM_RUN(8.0, 15.0, "Medium run"),
+    LONG_RUN(15.0, 25.0, "Long run"),
+    ULTRA_RUN(25.0, Double.MAX_VALUE, "Ultra run");
+
     fun contains(distanceKm: Double): Boolean = distanceKm >= minKm && distanceKm < maxKm
+
+    companion object {
+        fun fromLabel(label: String): DistanceBucket? = values().find { it.label.equals(label, ignoreCase = true) }
+    }
 }
 
 @Serializable
