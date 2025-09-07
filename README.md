@@ -1,165 +1,93 @@
 # MeBeatMe
 
-A cross-platform watch app that helps runners beat their own performance index each day, rather than racing others. Built with Kotlin Multiplatform for shared core logic and native UI for watchOS and Wear OS.
-
-## 🎯 Mission
-
-MeBeatMe presents runners with multiple-choice challenges on their wrist, asking "what would it take today to beat your best comparable performance?" The app uses the Purdy Points model to create normalized performance comparisons across different distances.
-
-## ✨ Features
-
-### v0.1 Core Features
-- **Multiple-Choice Challenges**: Four challenge types (Short & Fierce, Tempo Boost, Ease Into It, Surprise Me)
-- **Real-Time Pacing**: Live pace feedback with haptic coaching
-- **Performance Index (PPI)**: Purdy Points-based scoring system
-- **Historical Tracking**: Automatic tracking of best performance per distance bucket
-- **Cross-Platform**: Native UI for both watchOS and Wear OS
-
-### Challenge Types
-1. **Short & Fierce** — Hold target pace for short duration to beat sprint equivalent
-2. **Tempo Boost** — Sustain tempo pace to beat short-run index  
-3. **Ease Into It** — Cruise at comfortable pace to beat long-run PPI
-4. **Surprise Me** — AI-generated playful but beatable challenge
+A watch-first running app with distance-agnostic Personal Performance Index (PPI) and on-wrist "Beat-Your-Best" multiple-choice planner.
 
 ## 🏗️ Architecture
 
-### Kotlin Multiplatform Monorepo
+Clean Kotlin Multiplatform monorepo:
+
 ```
 MeBeatMe/
-├── shared/           # KMP core (PPI math, data models, business logic)
-├── watchos/          # iOS/watchOS SwiftUI interface
-├── wearos/           # Android/Wear OS Compose interface
-└── build.gradle.kts  # Root build configuration
+├── core/                    # KMP shared business logic
+│   ├── model.kt            # RunSession, Score, Bucket enums
+│   ├── ppi.kt              # PPI curve calculation
+│   ├── planner.kt          # Beat-your-best choice generator
+│   └── history.kt          # In-memory history store
+├── platform/wearos/        # Wear OS Jetpack Compose app
+├── platform/watchos/       # watchOS placeholder + xcframework task
+├── web/                    # Kotlin/JS web app
+└── server/                 # Ktor server with health endpoint
 ```
 
-### Core Components
-- **PurdyPointsCalculator**: Implements the Purdy Points model for PPI calculation
-- **PerformanceBucketManager**: Manages distance buckets and historical bests
-- **ChallengeGenerator**: Creates multiple-choice targets that beat historical performance
-- **MeBeatMeService**: Main orchestrator for app functionality
+## 🚀 Quick Start
 
-### Data Models
-- **RunSession**: Distance, duration, pace, samples
-- **Score**: PPI, bucket, target metrics, achievement status
-- **ChallengeOption**: Generated challenge with target pace/duration
-- **DistanceBucket**: Comparable performance bins (Sprint, Short Run, Medium Run, etc.)
-
-## 🧮 Performance Index (PPI) System
-
-Based on the Purdy Points model from elite athlete tables (1974), MeBeatMe calculates a Performance Index that allows comparison across different distances:
-
-- **Formula**: PPI = 1000 × (pace_ratio)^(-1.07)
-- **Reference Points**: Elite performance benchmarks for 100m to marathon
-- **Normalization**: Enables fair comparison between 1km sprint and 10km tempo run
-
-### Distance Buckets
-- **Sprint** (1-3km): Short, intense efforts
-- **Short Run** (3-8km): Tempo and 5K efforts  
-- **Medium Run** (8-15km): 10K and half-marathon pace
-- **Long Run** (15-25km): Marathon training runs
-- **Ultra Run** (25km+): Ultra-marathon distances
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Android Studio Arctic Fox or later
-- Xcode 14+ (for watchOS)
-- Kotlin 1.9.20+
-- Gradle 8.0+
-
-### Building the Project
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/MeBeatMe.git
-   cd MeBeatMe
-   ```
-
-2. **Build shared KMP module**
-   ```bash
-   ./gradlew :shared:build
-   ```
-
-3. **Build Wear OS app**
-   ```bash
-   ./gradlew :wearos:assembleDebug
-   ```
-
-4. **Build watchOS framework**
-   ```bash
-   ./gradlew :watchos:linkDebugFrameworkIosArm64
-   ```
-
-### Running Tests
+### Sync Gradle
 ```bash
-./gradlew test
+./gradlew build
 ```
 
-## 📱 Platform-Specific Features
-
-### Wear OS (Android)
-- Jetpack Compose UI optimized for round screens
-- Material 3 design system
-- Android haptic feedback integration
-- Health Connect integration for workout data
-
-### watchOS (iOS)
-- SwiftUI native interface
-- HealthKit integration for workout tracking
-- WorkoutKit for real-time metrics
-- Apple Watch haptic feedback
-
-## 🔧 Development
-
-### Adding New Challenge Types
-1. Extend `ChallengeGenerator` with new challenge logic
-2. Add challenge type to `ChallengeOption` model
-3. Update UI components to handle new challenge type
-4. Add tests for new challenge generation
-
-### Customizing PPI Calculation
-The Purdy Points model can be adjusted in `PurdyPointsCalculator.kt`:
-- Modify reference performance times
-- Adjust power factor for pace scaling
-- Add new distance reference points
-
-### Platform Integration
-- **Health Data**: Integrate with HealthKit (iOS) and Health Connect (Android)
-- **Location**: GPS tracking for accurate distance measurement
-- **Sensors**: Heart rate, cadence, and other metrics
-
-## 🧪 Testing
-
-The project includes comprehensive unit tests for:
-- PPI calculation accuracy
-- Challenge generation logic
-- Bucket management
-- Pace/time conversions
-
-Run tests with:
+### Run Wear OS App
 ```bash
-./gradlew test
+# Open Android Studio, select :platform:wearos module
+# Run on Wear OS emulator → view multiple-choice list
 ```
 
-## 📄 License
+### Run Web App
+```bash
+./gradlew :web:browserDevelopmentRun
+# Open shown URL; see choices text
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Run Server
+```bash
+./gradlew :server:run
+# GET http://localhost:8080/health
+```
 
-## 🤝 Contributing
+### Build iOS Framework
+```bash
+./gradlew :core:assembleXCFramework
+# Framework available in core/build/XCFrameworks/debug/
+```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🧮 Core Features
 
-## 🙏 Acknowledgments
+### PPI (Personal Performance Index)
+- **v0 transparent baseline**: `score(distance,time)` with light distance scaling
+- **Formula**: `350.0 * velocity^0.95 * distance^0.05`
+- **Range**: 0-1200 points
+- **Monotonic**: Faster times = higher scores
 
-- **Smashrun**: Inspiration for the SPI (Smashrun Performance Index) concept
-- **Purdy Points Model**: Performance comparison methodology
-- **Kotlin Multiplatform**: Enabling shared business logic across platforms
-- **SwiftUI & Jetpack Compose**: Modern declarative UI frameworks
+### Beat-Your-Best Planner
+- **Distance Buckets**: KM_1_3, KM_3_8, KM_8_15, KM_15_25, KM_25P
+- **Challenge Types**: Short & Fierce, Tempo Boost, Ease Into It, Surprise Me
+- **Target Generation**: Beats historical best by +1 PPI point
+- **Time Windows**: 5min, 10min, 20min options
 
----
+### History Store
+- **In-memory**: Replace with platform-specific persistence later
+- **Best Tracking**: Per-bucket historical maximums
+- **Corrections**: Elevation and temperature adjustments
 
-*"The only person you should try to be better than is the person you were yesterday."* - MeBeatMe Philosophy 
+## 📱 Platform Status
+
+- ✅ **Core KMP**: Models, PPI curve, planner, tests
+- ✅ **Wear OS**: Jetpack Compose multiple-choice UI
+- ✅ **Web**: Kotlin/JS text output
+- ✅ **Server**: Ktor health endpoint
+- 🚧 **watchOS**: xcframework ready, SwiftUI pending
+
+## 🔧 Development Notes
+
+- **PPI Curve**: v0 placeholder; swap for Purdy-style fit later
+- **Planner**: Beats best by +1 point; tune windows and labels
+- **History**: In-memory; replace per-platform with persistence
+- **Tests**: Core functions covered; keep small and documented
+
+## 📋 Next Steps
+
+1. **Wear OS**: Wire real sensor data + live progress ring
+2. **watchOS**: Export iOS framework + build SwiftUI app
+3. **Core**: Replace v0 PPI with Purdy Points model
+4. **Persistence**: Platform-specific data storage
+5. **Sync**: Server endpoints for cross-device history 
