@@ -79,7 +79,7 @@ class ChallengeGenerator(
         return ChallengeOption(
             id = "short_fierce_${System.currentTimeMillis()}",
             title = "Short & Fierce",
-            description = "Hold ${PaceUtils.formatPace(targetPace)}/km for ${formatDuration(targetDuration)} to top your best ${bucket.name.lowercase()} equivalent",
+            description = "Hold ${PaceUtils.formatPace(targetPace)}/km for ${formatDuration(targetDuration)} to top your best ${bucket.label.lowercase()} equivalent",
             targetPace = targetPace,
             targetDuration = targetDuration,
             targetDistance = targetDistance,
