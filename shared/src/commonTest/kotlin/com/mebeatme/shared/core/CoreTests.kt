@@ -204,7 +204,32 @@ class PaceUtilsTest {
         val secondsPerKm = 300.0
         val minutesPerKm = PaceUtils.secondsPerKmToMinutesPerKm(secondsPerKm)
         val backToSeconds = PaceUtils.minutesPerKmToSecondsPerKm(minutesPerKm)
-        
+
         assertEquals(secondsPerKm, backToSeconds, "Conversion should be reversible")
+    }
+
+    @Test
+    fun testSpeedConversions() {
+        val mps = 5.0
+        val secPerKm = PaceUtils.metersPerSecondToSecondsPerKm(mps)
+        assertEquals(200.0, secPerKm, 0.0001, "5 m/s should be 200 sec/km")
+        val backToMps = PaceUtils.secondsPerKmToMetersPerSecond(secPerKm)
+        assertEquals(mps, backToMps, 0.0001, "Conversion should be reversible")
+        val minPerKm = PaceUtils.metersPerSecondToMinutesPerKm(mps)
+        assertEquals(200.0 / 60.0, minPerKm, 0.0001, "5 m/s should be 3.333... min/km")
+        val mpsAgain = PaceUtils.minutesPerKmToMetersPerSecond(minPerKm)
+        assertEquals(mps, mpsAgain, 0.0001, "Conversion should be reversible")
+    }
+}
+
+class DistanceBucketLabelTest {
+
+    @Test
+    fun testLabelRoundTrip() {
+        DistanceBucket.values().forEach { bucket ->
+            val label = bucket.label
+            val parsed = DistanceBucket.fromLabel(label)
+            assertEquals(bucket, parsed, "Label should map back to original bucket")
+        }
     }
 }

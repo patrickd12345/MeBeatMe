@@ -94,9 +94,21 @@ object PurdyPointsCalculator {
  * Utility functions for pace and time conversions
  */
 object PaceUtils {
-    
+
+    fun metersPerSecondToSecondsPerKm(metersPerSecond: Double): Double =
+        if (metersPerSecond == 0.0) Double.POSITIVE_INFINITY else 1000.0 / metersPerSecond
+
+    fun secondsPerKmToMetersPerSecond(secondsPerKm: Double): Double =
+        if (secondsPerKm == 0.0) 0.0 else 1000.0 / secondsPerKm
+
+    fun metersPerSecondToMinutesPerKm(metersPerSecond: Double): Double =
+        secondsPerKmToMinutesPerKm(metersPerSecondToSecondsPerKm(metersPerSecond))
+
+    fun minutesPerKmToMetersPerSecond(minutesPerKm: Double): Double =
+        secondsPerKmToMetersPerSecond(minutesPerKmToSecondsPerKm(minutesPerKm))
+
     fun secondsPerKmToMinutesPerKm(secondsPerKm: Double): Double = secondsPerKm / 60.0
-    
+
     fun minutesPerKmToSecondsPerKm(minutesPerKm: Double): Double = minutesPerKm * 60.0
     
     fun formatPace(secondsPerKm: Double): String {
