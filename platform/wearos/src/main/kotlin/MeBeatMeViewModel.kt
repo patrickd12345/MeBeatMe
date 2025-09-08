@@ -2,7 +2,7 @@ package com.mebeatme.wearos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mebeatme.core.*
+import com.mebeatme.core.ppi.PpiEngine
 import com.mebeatme.wearos.data.ScoreDao
 import com.mebeatme.wearos.data.ScoreEntity
 import com.mebeatme.wearos.health.HealthServicesManager
@@ -74,7 +74,7 @@ class MeBeatMeViewModel(private val scoreDao: ScoreDao) : ViewModel() {
             
             // Complete the session
             val runSession = session.complete()
-            val ppi = PpiCurve.score(runSession.distanceMeters, runSession.elapsedSeconds)
+            val ppi = PpiEngine.score(runSession.distanceMeters, runSession.elapsedSeconds)
             val bucket = bucketFor(runSession.distanceMeters)
             
             val score = Score(

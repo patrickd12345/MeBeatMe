@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeBeatMe Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            background: #fafafa;
+            min-height: 100vh;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 48px;
+            font-size: 2.25rem;
+            color: #111827;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        h2 {
+            color: #111827;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .sessions-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .session-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .session-ppi {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .session-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            opacity: 0.7;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+        }
+        .refresh-btn {
+            background: #1d4ed8;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        .refresh-btn:hover {
+            background: #1e40af;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(29, 78, 216, 0.3);
+        }
+        .upload-link {
+            display: inline-block;
+            background: #059669;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        .upload-link:hover {
+            background: #047857;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .challenge-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .challenge-card:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        .challenge-card.current-workout {
+            border: 3px solid #1d4ed8;
+            background: #f0f9ff;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+        }
+        .challenge-card.current-workout .challenge-title {
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        .current-badge {
+            background: #1d4ed8;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .challenge-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .challenge-details {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        .challenge-target {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏃‍♂️ MeBeatMe Dashboard</h1>
+        
+        <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
+        <a href="fit-upload.html" class="upload-link">📁 Upload FIT File</a>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="loading" class="loading">Loading your performance data...</div>
+        
+        <div id="content" style="display: none;">
+            <h2>📊 Best PPI by Distance Bucket</h2>
+            <div class="stats-grid" id="bests-grid">
+                <!-- Best PPIs will be populated here -->
+            </div>
+            
+            <h2>🎯 Workouts to Beat</h2>
+            <div id="challenges-section">
+                <!-- Your best performances to beat will be populated here -->
+            </div>
+            
+            <h2>📈 Recent Sessions</h2>
+            <div class="sessions-list" id="sessions-list">
+                <!-- Recent sessions will be populated here -->
+            </div>
+            
+            <h2>ℹ️ PPI Transparency</h2>
+            <div class="container">
+                <p><strong>Current PPI Model: Purdy v1 (Default)</strong></p>
+                <p><strong>How your PPI is calculated:</strong></p>
+                <ul>
+                    <li><strong>Distance:</strong> Total meters covered in your run</li>
+                    <li><strong>Time:</strong> Total elapsed time in seconds</li>
+                    <li><strong>Baseline Time:</strong> Elite performance time for your distance</li>
+                    <li><strong>Performance Ratio:</strong> Baseline Time ÷ Your Time</li>
+                    <li><strong>Purdy Formula:</strong> 1000 × (Baseline Time ÷ Your Time)^(-2.0)</li>
+                    <li><strong>Range:</strong> PPI is capped between 100 and 2000</li>
+                </ul>
+                <p><strong>Elite Baseline Anchors:</strong></p>
+                <ul>
+                    <li><strong>1500m:</strong> 3:50 → 1000 points</li>
+                    <li><strong>5000m:</strong> 13:00 → 1000 points</li>
+                    <li><strong>10000m:</strong> 27:00 → 1000 points</li>
+                    <li><strong>Half Marathon:</strong> 59:00 → 1000 points</li>
+                    <li><strong>Marathon:</strong> 2:04:20 → 1000 points</li>
+                </ul>
+                <p><strong>Score Ranges:</strong></p>
+                <ul>
+                    <li><strong>Elite Performance:</strong> 1000 points (meets baseline)</li>
+                    <li><strong>Competitive Performance:</strong> 694 points (slower than elite)</li>
+                    <li><strong>Recreational Performance:</strong> 300-500 points</li>
+                    <li><strong>Moderate Performance:</strong> 100 points (minimum score)</li>
+                </ul>
+                <p><strong>Distance Buckets:</strong></p>
+                <ul>
+                    <li><strong>KM_1_3:</strong> 1-3 kilometers</li>
+                    <li><strong>KM_3_8:</strong> 3-8 kilometers</li>
+                    <li><strong>KM_8_15:</strong> 8-15 kilometers</li>
+                    <li><strong>KM_15_25:</strong> 15-25 kilometers</li>
+                    <li><strong>KM_25P:</strong> 25+ kilometers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const loadingEl = document.getElementById('loading');
+            const contentEl = document.getElementById('content');
+            const errorEl = document.getElementById('error');
+            
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            
+            try {
+                // Load best PPIs
+                const bestsResponse = await fetch('http://localhost:8080/sync/bests');
+                const bestsData = await bestsResponse.json();
+                
+                if (bestsData.status === 'success') {
+                    displayBests(bestsData.bests);
+                    generateChallenges(bestsData.bests);
+                } else {
+                    throw new Error('Failed to load best PPIs');
+                }
+                
+                // Load recent sessions
+                const sessionsResponse = await fetch('http://localhost:8080/sync/sessions');
+                const sessionsData = await sessionsResponse.json();
+                
+                if (sessionsData.status === 'success') {
+                    displaySessions(sessionsData.sessions);
+                } else {
+                    throw new Error('Failed to load sessions');
+                }
+                
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                errorEl.textContent = `Error loading data: ${error.message}`;
+            }
+        }
+        
+        function displayBests(bests) {
+            const grid = document.getElementById('bests-grid');
+            grid.innerHTML = '';
+            
+            const bucketNames = {
+                'KM_1_3': '1-3K',
+                'KM_3_8': '3-8K', 
+                'KM_8_15': '8-15K',
+                'KM_15_25': '15-25K',
+                'KM_25P': '25K+'
+            };
+            
+            if (Object.keys(bests).length === 0) {
+                grid.innerHTML = '<div class="empty-state">No performance data yet. Upload your first FIT file to see your best PPIs!</div>';
+                return;
+            }
+            
+            Object.entries(bests).forEach(([bucket, ppi]) => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <div class="stat-value">${ppi.toFixed(1)}</div>
+                    <div class="stat-label">${bucketNames[bucket] || bucket}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function generateChallenges(bests) {
+            const section = document.getElementById('challenges-section');
+            section.innerHTML = '';
+            
+            if (Object.keys(bests).length === 0) {
+                section.innerHTML = '<div class="empty-state">Upload your first run to see your best performances to beat!</div>';
+                return;
+            }
+            
+            const workoutsToBeat = [];
+            
+            // Focus on your actual performance, not arbitrary buckets
+            Object.entries(bests).forEach(([bucket, bestPpi]) => {
+                // Use your actual run distance (5.94km) as the baseline
+                const actualRunDistance = 5.94; // Your real run distance
+                
+                // Calculate your current pace from the best PPI using your actual distance
+                const currentPace = calculateCurrentPace(bestPpi, actualRunDistance * 1000);
+                const currentPaceMin = Math.floor(currentPace / 60);
+                const currentPaceSec = Math.round(currentPace % 60);
+                
+                // Calculate 3% pace improvement (recommended sustainable improvement)
+                const paceImprovementPercent = 0.03; // 3% faster pace
+                const improvedPace = currentPace * (1 - paceImprovementPercent);
+                
+                // Calculate what PPI this improved pace would achieve at your actual distance
+                const targetPpi = calculateActualPpi(actualRunDistance * 1000, improvedPace);
+                
+                // Generate 4 different workout variations to beat YOUR specific performance
+                const workoutVariations = [
+                    {
+                        title: "Beat Your 5.9K Best",
+                        distance: actualRunDistance,
+                        description: "Beat your 5.9km run by 3%",
+                        targetPpi: targetPpi.toFixed(1)
+                    },
+                    {
+                        title: "Beat Your Best - Shorter Sprint", 
+                        distance: Math.max(1.0, actualRunDistance * 0.7),
+                        description: "4.2km sprint, 3% faster pace",
+                        targetPpi: targetPpi.toFixed(1)
+                    },
+                    {
+                        title: "Beat Your Best - 10K Challenge",
+                        distance: 10.0,
+                        description: "10K distance, 3% faster pace",
+                        targetPpi: targetPpi.toFixed(1)
+                    },
+                    {
+                        title: "Beat Your Best - 20K Endurance",
+                        distance: 20.0,
+                        description: "20K distance, 3% faster pace",
+                        targetPpi: targetPpi.toFixed(1)
+                    }
+                ];
+                
+                workoutVariations.forEach((workout, index) => {
+                    // Calculate required pace to achieve target PPI for this specific distance
+                    const targetPace = calculateTargetPace(parseFloat(workout.targetPpi), workout.distance * 1000);
+                    const targetPaceMin = Math.floor(targetPace / 60);
+                    const targetPaceSec = Math.round(targetPace % 60);
+                    
+                    // Calculate what pace would achieve the current PPI at this distance
+                    const currentPaceForDistance = calculateTargetPace(bestPpi, workout.distance * 1000);
+                    const currentPaceMin = Math.floor(currentPaceForDistance / 60);
+                    const currentPaceSec = Math.round(currentPaceForDistance % 60);
+                    
+                    // Calculate duration for this workout
+                    const durationMin = Math.round(workout.distance * targetPace / 60);
+                    
+                    // Check if this is your actual run distance (5.9K)
+                    const isCurrentWorkout = workout.title.includes("5.9K");
+                    
+                    // Calculate what PPI this pace would actually achieve (for verification)
+                    const actualPpi = calculateActualPpi(workout.distance * 1000, targetPace);
+                    
+                    workoutsToBeat.push({
+                        title: workout.title,
+                        bucket: "Your Performance",
+                        currentPace: `${currentPaceMin}:${currentPaceSec.toString().padStart(2, '0')}/km`,
+                        targetPace: `${targetPaceMin}:${targetPaceSec.toString().padStart(2, '0')}/km`,
+                        duration: `${durationMin} min`,
+                        distance: `${workout.distance.toFixed(1)} km`,
+                        description: workout.description,
+                        currentPpi: bestPpi.toFixed(1),
+                        targetPpi: actualPpi.toFixed(1), // Use actual calculated PPI
+                        isCurrentWorkout: isCurrentWorkout
+                    });
+                });
+            });
+            
+            // Display workouts to beat
+            const grid = document.createElement('div');
+            grid.className = 'challenges-grid';
+            
+            workoutsToBeat.forEach(workout => {
+                const card = document.createElement('div');
+                card.className = `challenge-card ${workout.isCurrentWorkout ? 'current-workout' : ''}`;
+                
+                const titleHtml = workout.isCurrentWorkout 
+                    ? `${workout.title}<span class="current-badge">CURRENT</span>`
+                    : workout.title;
+                
+                card.innerHTML = `
+                    <div class="challenge-title">${titleHtml}</div>
+                    <div class="challenge-details">
+                        <div><strong>Distance:</strong> ${workout.distance}</div>
+                        <div><strong>Current Pace:</strong> ${workout.currentPace}</div>
+                        <div><strong>Target Pace:</strong> ${workout.targetPace}</div>
+                        <div><strong>Duration:</strong> ${workout.duration}</div>
+                        <div>${workout.description}</div>
+                    </div>
+                    <div class="challenge-target">
+                        Beat ${workout.currentPpi} PPI → Target ${workout.targetPpi} PPI
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            section.appendChild(grid);
+        }
+        
+        function calculateCurrentPace(ppi, distanceMeters) {
+            // PPI = 350 * (speed^0.95) * (distance^0.05)
+            // Solving for speed: speed = (PPI / (350 * distance^0.05))^(1/0.95)
+            const speed = Math.pow(ppi / (350 * Math.pow(distanceMeters, 0.05)), 1/0.95);
+            // Convert from m/s to seconds per km
+            return 1000 / speed;
+        }
+        
+        function getBucketInfo(bucket) {
+            const bucketMap = {
+                'KM_1_3': { name: '1-3K Sprint', minDistance: 1000, maxDistance: 3000 },
+                'KM_3_8': { name: '3-8K Short Run', minDistance: 3000, maxDistance: 8000 },
+                'KM_8_15': { name: '8-15K Medium Run', minDistance: 8000, maxDistance: 15000 },
+                'KM_15_25': { name: '15-25K Long Run', minDistance: 15000, maxDistance: 25000 },
+                'KM_25P': { name: '25K+ Ultra', minDistance: 25000, maxDistance: 100000 }
+            };
+            return bucketMap[bucket] || { name: bucket, minDistance: 5000, maxDistance: 10000 };
+        }
+        
+        function calculateTargetPace(targetPpi, distanceMeters) {
+            // PPI = 350 * (speed^0.95) * (distance^0.05)
+            // Solving for speed: speed = (PPI / (350 * distance^0.05))^(1/0.95)
+            const speed = Math.pow(targetPpi / (350 * Math.pow(distanceMeters, 0.05)), 1/0.95);
+            // Convert from m/s to seconds per km
+            return 1000 / speed;
+        }
+        
+        function calculateActualPpi(distanceMeters, paceSecondsPerKm) {
+            // Convert pace to speed (m/s)
+            const speed = 1000 / paceSecondsPerKm;
+            // Calculate PPI using the formula
+            return 350 * Math.pow(speed, 0.95) * Math.pow(distanceMeters, 0.05);
+        }
+        
+        function displaySessions(sessions) {
+            const list = document.getElementById('sessions-list');
+            list.innerHTML = '';
+            
+            if (sessions.length === 0) {
+                list.innerHTML = '<div class="session-item"><div class="empty-state">No sessions found. Upload your first FIT file to start tracking your performance!</div></div>';
+                return;
+            }
+            
+            sessions.forEach(session => {
+                const item = document.createElement('div');
+                item.className = 'session-item';
+                
+                const date = new Date(session.createdAt);
+                const distanceKm = (session.distance / 1000).toFixed(2);
+                const durationMin = (session.duration / 60).toFixed(1);
+                
+                item.innerHTML = `
+                    <div class="session-header">
+                        <div><strong>${session.filename}</strong></div>
+                        <div class="session-ppi">PPI: ${session.ppi.toFixed(1)}</div>
+                    </div>
+                    <div class="session-details">
+                        <div><strong>Distance:</strong> ${distanceKm} km</div>
+                        <div><strong>Duration:</strong> ${durationMin} min</div>
+                        <div><strong>Bucket:</strong> ${session.bucket}</div>
+                        <div><strong>Date:</strong> ${date.toLocaleDateString()}</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>

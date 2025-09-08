@@ -1,5 +1,6 @@
 package com.mebeatme.core
 
+import com.mebeatme.core.ppi.PpiEngine
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
@@ -22,8 +23,8 @@ class BeatPlanner(private val history: List<Score>) {
         val out = windows.map { w ->
             val km = kmWindows.getValue(w)
             val distM = km * 1000
-            val secPerKm = PpiCurve.requiredPaceSecPerKm(best + 1.0, w, distM)
-            val projected = PpiCurve.score(distM, secPerKm * km)
+            val secPerKm = PpiEngine.requiredPaceSecPerKm(best + 1.0, w, distM)
+            val projected = PpiEngine.score(distM, secPerKm * km)
             BeatChoice(
                 label = when (w) { 300 -> "Short & Fierce"; 600 -> "Tempo Boost"; else -> "Ease Into It" },
                 targetPaceSecPerKm = secPerKm.toInt(),

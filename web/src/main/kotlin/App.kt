@@ -4,7 +4,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
-import com.mebeatme.core.*
+import com.mebeatme.core.ppi.PpiEngine
 
 fun main() {
     val scope = MainScope()
@@ -94,7 +94,7 @@ fun displayDashboard(store: HistoryStore, bestsData: dynamic?, sessionsData: dyn
         sessionsElement.innerHTML = sessions.joinToString("<br>") { session ->
             val distance = session.distanceMeters as Double
             val duration = session.elapsedSeconds as Double
-            val ppi = PpiCurve.score(distance, duration)
+            val ppi = PpiEngine.score(distance, duration)
             val bucket = bucketFor(distance)
             
             "<div style='margin: 8px 0; padding: 8px; background: white; border-radius: 4px;'>" +
@@ -110,8 +110,28 @@ fun displayDashboard(store: HistoryStore, bestsData: dynamic?, sessionsData: dyn
     val transparencyElement = document.getElementById("transparency")!!
     transparencyElement.innerHTML = """
         <div style='background: white; padding: 16px; border-radius: 4px;'>
-            <h3>PPI Formula</h3>
-            <code>PPI = 350.0 × (speed^0.95) × (distance^0.05)</code>
+            <h3>Current PPI Model: Purdy v1 (Default)</h3>
+            <p><strong>Model:</strong> ${PpiEngine.getCurrentModelVersion()}</p>
+            
+            <h3>Purdy Formula</h3>
+            <code>PPI = 1000.0 × (baseline_time / actual_time)^(-2.0)</code>
+            
+            <h3>Elite Baseline Anchors</h3>
+            <ul>
+                <li><strong>1500m:</strong> 3:50 → 1000 points</li>
+                <li><strong>5000m:</strong> 13:00 → 1000 points</li>
+                <li><strong>10000m:</strong> 27:00 → 1000 points</li>
+                <li><strong>Half Marathon:</strong> 59:00 → 1000 points</li>
+                <li><strong>Marathon:</strong> 2:04:20 → 1000 points</li>
+            </ul>
+            
+            <h3>Score Ranges</h3>
+            <ul>
+                <li><strong>Elite Performance:</strong> 1000 points (meets baseline)</li>
+                <li><strong>Competitive Performance:</strong> 694 points (slower than elite)</li>
+                <li><strong>Recreational Performance:</strong> 300-500 points</li>
+                <li><strong>Moderate Performance:</strong> 100 points (minimum score)</li>
+            </ul>
             
             <h3>Distance Buckets</h3>
             <ul>
@@ -123,9 +143,9 @@ fun displayDashboard(store: HistoryStore, bestsData: dynamic?, sessionsData: dyn
             </ul>
             
             <h3>How It Works</h3>
-            <p>The PPI (Personal Performance Index) normalizes performance across different distances, 
-            allowing fair comparison between a 1km sprint and a 10km tempo run. Higher scores indicate 
-            better performance relative to the distance.</p>
+            <p>The Purdy PPI system compares your performance to elite baseline times, 
+            providing SPI-like scoring that rewards consistency across distances. 
+            Your score reflects how you compare to world-class performance standards.</p>
         </div>
     """
 }
