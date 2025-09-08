@@ -5,134 +5,147 @@ import os
 class GPXParser {
     private let logger = Logger(subsystem: "com.mebeatme.watch", category: "GPXParser")
     
+    /// Parses GPX data into a RunRecord
+    /// - Parameters:
+    ///   - data: GPX file data
+    ///   - fileName: Original filename
+    /// - Returns: Parsed RunRecord
     func parse(data: Data, fileName: String) async throws -> RunRecord {
         logger.info("Parsing GPX file: \(fileName)")
         
         guard let xmlString = String(data: data, encoding: .utf8) else {
-            throw AppError.parseFailed("Invalid UTF-8 encoding")
+            throw AppError.invalidFileFormat("Unable to decode GPX file as UTF-8")
         }
         
-        // Parse XML to extract track points
-        let trackPoints = try parseGPXTrackPoints(from: xmlString)
+        // Parse XML using a simple approach (in production, use XMLParser)
+        let trackPoints = try extractTrackPoints(from: xmlString)
         
         guard !trackPoints.isEmpty else {
-            throw AppError.parseFailed("No track points found in GPX file")
+            throw AppError.noTrackData("No track points found in GPX file")
         }
         
         // Calculate run metrics
-        let (distance, duration, splits) = try calculateRunMetrics(from: trackPoints)
-        
+        let distance = calculateDistance(from: trackPoints)
+        let duration = calculateDuration(from: trackPoints)
         let averagePace = duration > 0 ? Double(duration) / (distance / 1000.0) : 0
+        let splits = calculateSplits(from: trackPoints)
+        let heartRateData = extractHeartRateData(from: xmlString, trackPoints: trackPoints)
+        let elevationGain = calculateElevationGain(from: trackPoints)
         
-        logger.info("Parsed GPX: \(String(format: "%.2f", distance/1000))km in \(duration)s")
-        
-        return RunRecord(
+        let runRecord = RunRecord(
             distance: distance,
             duration: duration,
             averagePace: averagePace,
             splits: splits,
             source: "gpx",
-            fileName: fileName
+            fileName: fileName,
+            heartRateData: heartRateData,
+            elevationGain: elevationGain
         )
+        
+        logger.info("Successfully parsed GPX: \(String(format: "%.2f", distance/1000))km in \(Units.formatTime(duration))")
+        
+        return runRecord
     }
     
-    private func parseGPXTrackPoints(from xmlString: String) throws -> [TrackPoint] {
+    /// Extracts track points from GPX XML
+    private func extractTrackPoints(from xmlString: String) throws -> [TrackPoint] {
         var trackPoints: [TrackPoint] = []
         
-        // Simple XML parsing for GPX track points
-        // In production, you'd want to use a proper XML parser
-        let lines = xmlString.components(separatedBy: .newlines)
+        // Simple regex-based parsing (in production, use proper XML parser)
+        let trackPointPattern = #"<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"[^>]*>.*?<time>([^<]*)</time>"#
+        let regex = try NSRegularExpression(pattern: trackPointPattern, options: [.dotMatchesLineSeparators])
+        let matches = regex.matches(in: xmlString, range: NSRange(xmlString.startIndex..., in: xmlString))
         
-        for line in lines {
-            if line.contains("<trkpt") {
-                if let point = parseTrackPoint(from: line) {
-                    trackPoints.append(point)
-                }
-            }
-        }
-        
-        return trackPoints
-    }
-    
-    private func parseTrackPoint(from line: String) -> TrackPoint? {
-        // Extract lat/lon from <trkpt lat="..." lon="...">
-        let latPattern = #"lat="([^"]+)""#
-        let lonPattern = #"lon="([^"]+)""#
-        
-        guard let latMatch = line.range(of: latPattern, options: .regularExpression),
-              let lonMatch = line.range(of: lonPattern, options: .regularExpression) else {
-            return nil
-        }
-        
-        let latString = String(line[latMatch]).replacingOccurrences(of: "lat=\"", with: "").replacingOccurrences(of: "\"", with: "")
-        let lonString = String(line[lonMatch]).replacingOccurrences(of: "lon=\"", with: "").replacingOccurrences(of: "\"", with: "")
-        
-        guard let lat = Double(latString),
-              let lon = Double(lonString) else {
-            return nil
-        }
-        
-        // Extract time from <time>...</time> if present
-        let timePattern = #"<time>([^<]+)</time>"#
-        var time: Date?
-        
-        if let timeMatch = line.range(of: timePattern, options: .regularExpression) {
-            let timeString = String(line[timeMatch])
-                .replacingOccurrences(of: "<time>", with: "")
-                .replacingOccurrences(of: "</time>", with: "")
+        for match in matches {
+            guard match.numberOfRanges == 4 else { continue }
             
-            let formatter = ISO8601DateFormatter()
-            time = formatter.date(from: timeString)
+            let latRange = Range(match.range(at: 1), in: xmlString)!
+            let lonRange = Range(match.range(at: 2), in: xmlString)!
+            let timeRange = Range(match.range(at: 3), in: xmlString)!
+            
+            let latString = String(xmlString[latRange])
+            let lonString = String(xmlString[lonRange])
+            let timeString = String(xmlString[timeRange])
+            
+            guard let lat = Double(latString),
+                  let lon = Double(lonString),
+                  let timestamp = parseTimestamp(timeString) else {
+                continue
+            }
+            
+            trackPoints.append(TrackPoint(latitude: lat, longitude: lon, timestamp: timestamp))
         }
         
-        return TrackPoint(latitude: lat, longitude: lon, time: time)
+        return trackPoints.sorted { $0.timestamp < $1.timestamp }
     }
     
-    private func calculateRunMetrics(from trackPoints: [TrackPoint]) throws -> (distance: Double, duration: Int, splits: [Split]) {
-        guard trackPoints.count >= 2 else {
-            throw AppError.parseFailed("Need at least 2 track points")
-        }
+    /// Parses ISO 8601 timestamp
+    private func parseTimestamp(_ timeString: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        return formatter.date(from: timeString)
+    }
+    
+    /// Calculates total distance from track points
+    private func calculateDistance(from trackPoints: [TrackPoint]) -> Double {
+        guard trackPoints.count > 1 else { return 0 }
         
         var totalDistance: Double = 0
-        var splits: [Split] = []
         
-        // Calculate distance between consecutive points
         for i in 1..<trackPoints.count {
-            let prev = trackPoints[i-1]
-            let curr = trackPoints[i]
-            
-            let segmentDistance = calculateDistance(
-                from: (prev.latitude, prev.longitude),
-                to: (curr.latitude, curr.longitude)
+            let distance = calculateDistanceBetween(
+                trackPoints[i-1],
+                trackPoints[i]
             )
-            
-            totalDistance += segmentDistance
+            totalDistance += distance
         }
         
-        // Calculate duration
-        let startTime = trackPoints.first?.time ?? Date()
-        let endTime = trackPoints.last?.time ?? Date()
-        let duration = Int(endTime.timeIntervalSince(startTime))
+        return totalDistance
+    }
+    
+    /// Calculates distance between two track points using Haversine formula
+    private func calculateDistanceBetween(_ point1: TrackPoint, _ point2: TrackPoint) -> Double {
+        let earthRadius: Double = 6371000 // meters
         
-        // Generate splits (every 1km)
-        let splitDistance: Double = 1000 // 1km
+        let lat1Rad = point1.latitude * .pi / 180
+        let lat2Rad = point2.latitude * .pi / 180
+        let deltaLatRad = (point2.latitude - point1.latitude) * .pi / 180
+        let deltaLonRad = (point2.longitude - point1.longitude) * .pi / 180
+        
+        let a = sin(deltaLatRad/2) * sin(deltaLatRad/2) +
+                cos(lat1Rad) * cos(lat2Rad) *
+                sin(deltaLonRad/2) * sin(deltaLonRad/2)
+        
+        let c = 2 * atan2(sqrt(a), sqrt(1-a))
+        
+        return earthRadius * c
+    }
+    
+    /// Calculates total duration from track points
+    private func calculateDuration(from trackPoints: [TrackPoint]) -> Int {
+        guard trackPoints.count > 1 else { return 0 }
+        
+        let startTime = trackPoints.first!.timestamp
+        let endTime = trackPoints.last!.timestamp
+        
+        return Int(endTime.timeIntervalSince(startTime))
+    }
+    
+    /// Calculates splits (every kilometer)
+    private func calculateSplits(from trackPoints: [TrackPoint]) -> [Split] {
+        guard trackPoints.count > 1 else { return [] }
+        
+        var splits: [Split] = []
         var currentSplitDistance: Double = 0
         var splitStartIndex = 0
         
         for i in 1..<trackPoints.count {
-            let prev = trackPoints[i-1]
-            let curr = trackPoints[i]
-            
-            let segmentDistance = calculateDistance(
-                from: (prev.latitude, prev.longitude),
-                to: (curr.latitude, curr.longitude)
-            )
-            
+            let segmentDistance = calculateDistanceBetween(trackPoints[i-1], trackPoints[i])
             currentSplitDistance += segmentDistance
             
-            if currentSplitDistance >= splitDistance {
-                // Create split
-                let splitDuration = Int(trackPoints[i].time?.timeIntervalSince(trackPoints[splitStartIndex].time ?? startTime) ?? 0)
+            // Create split every 1000 meters
+            if currentSplitDistance >= 1000 {
+                let splitDuration = Int(trackPoints[i].timestamp.timeIntervalSince(trackPoints[splitStartIndex].timestamp))
                 let splitPace = splitDuration > 0 ? Double(splitDuration) / (currentSplitDistance / 1000.0) : 0
                 
                 splits.append(Split(
@@ -146,31 +159,27 @@ class GPXParser {
             }
         }
         
-        return (totalDistance, duration, splits)
+        return splits
     }
     
-    private func calculateDistance(from: (Double, Double), to: (Double, Double)) -> Double {
-        // Haversine formula for calculating distance between two points
-        let earthRadius: Double = 6371000 // meters
-        
-        let lat1Rad = from.0 * .pi / 180
-        let lat2Rad = to.0 * .pi / 180
-        let deltaLatRad = (to.0 - from.0) * .pi / 180
-        let deltaLonRad = (to.1 - from.1) * .pi / 180
-        
-        let a = sin(deltaLatRad / 2) * sin(deltaLatRad / 2) +
-                cos(lat1Rad) * cos(lat2Rad) *
-                sin(deltaLonRad / 2) * sin(deltaLonRad / 2)
-        
-        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        
-        return earthRadius * c
+    /// Extracts heart rate data from GPX XML
+    private func extractHeartRateData(from xmlString: String, trackPoints: [TrackPoint]) -> [HeartRatePoint] {
+        // TODO: Implement heart rate extraction from GPX extensions
+        // This would parse <extensions><ns3:TrackPointExtension><ns3:hr>...</ns3:hr></ns3:TrackPointExtension></extensions>
+        return []
+    }
+    
+    /// Calculates elevation gain from track points
+    private func calculateElevationGain(from trackPoints: [TrackPoint]) -> Double {
+        // TODO: Implement elevation extraction from GPX <ele> tags
+        // For now, return 0
+        return 0
     }
 }
 
-/// Represents a GPS track point
-struct TrackPoint {
+/// Represents a track point with GPS coordinates and timestamp
+private struct TrackPoint {
     let latitude: Double
     let longitude: Double
-    let time: Date?
+    let timestamp: Date
 }

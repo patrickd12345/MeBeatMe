@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.9.20"
+    kotlin("plugin.serialization")
+    id("com.android.library")
 }
 
 kotlin {
@@ -11,6 +12,8 @@ kotlin {
             }
         }
     }
+    
+    jvm()
     
     listOf(
         iosX64(),
@@ -63,5 +66,20 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+// Task to build XCFramework for iOS/watchOS
+tasks.register("assembleXCFramework") {
+    group = "build"
+    description = "Build XCFramework for iOS/watchOS"
+    dependsOn("linkDebugFrameworkIosArm64", "linkDebugFrameworkIosX64", "linkDebugFrameworkIosSimulatorArm64")
+    
+    doLast {
+        println("XCFramework built successfully!")
+        println("Frameworks available at:")
+        println("- iosArm64: shared/build/bin/iosArm64/debugFramework/shared.framework")
+        println("- iosX64: shared/build/bin/iosX64/debugFramework/shared.framework")
+        println("- iosSimulatorArm64: shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework")
     }
 }

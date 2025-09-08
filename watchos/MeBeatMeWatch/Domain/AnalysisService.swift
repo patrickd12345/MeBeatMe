@@ -1,163 +1,244 @@
 import Foundation
 import os
 
-/// Service for analyzing runs and generating recommendations
+/// Service for analyzing runs and generating performance recommendations
 class AnalysisService {
     private let logger = Logger(subsystem: "com.mebeatme.watch", category: "AnalysisService")
     private let kmpBridge = KMPBridge()
     
     /// Analyzes a run and generates recommendations
-    /// - Parameter runRecord: The run to analyze
-    /// - Returns: AnalyzedRun with PPI, Purdy score, and recommendations
-    func analyzeRun(_ runRecord: RunRecord) throws -> AnalyzedRun {
-        logger.info("Analyzing run: \(runRecord.fileName)")
+    /// - Parameter run: The run to analyze
+    /// - Returns: Analysis result with PPI and recommendations
+    func analyzeRun(_ run: RunRecord) -> RunAnalysis {
+        logger.info("Analyzing run: \(run.fileName)")
         
         // Calculate PPI using KMP bridge
-        let ppi = kmpBridge.calculatePPI(distance: runRecord.distance, duration: runRecord.duration)
+        let ppi = kmpBridge.calculatePPI(distance: run.distance, duration: run.duration)
         
-        // For now, Purdy score is the same as PPI
-        // In a full implementation, this might be different
-        let purdyScore = ppi
+        // Generate recommendations based on performance
+        let recommendations = generateRecommendations(for: run, ppi: ppi)
         
-        // Generate recommendation
-        let recommendation = try generateRecommendation(for: runRecord, currentPPI: ppi)
+        // Calculate performance metrics
+        let metrics = calculatePerformanceMetrics(for: run)
         
-        let analyzedRun = AnalyzedRun(
-            runRecord: runRecord,
+        let analysis = RunAnalysis(
+            run: run,
             ppi: ppi,
-            purdyScore: purdyScore,
-            recommendation: recommendation
+            recommendations: recommendations,
+            metrics: metrics
         )
         
-        logger.info("Analysis complete - PPI: \(String(format: "%.1f", ppi)), Recommendation: \(recommendation.description)")
+        logger.info("Analysis complete - PPI: \(String(format: "%.1f", ppi))")
         
-        return analyzedRun
+        return analysis
     }
     
-    /// Generates a training recommendation based on the run
-    private func generateRecommendation(for run: RunRecord, currentPPI: Double) throws -> Recommendation {
+    /// Generates performance recommendations based on run data
+    private func generateRecommendations(for run: RunRecord, ppi: Double) -> [Recommendation] {
+        var recommendations: [Recommendation] = []
+        
+        // Distance-based recommendations
         let distanceKm = run.distance / 1000.0
         
-        // Determine target PPI improvement
-        let targetPPI = calculateTargetPPI(currentPPI: currentPPI)
-        let projectedGain = targetPPI - currentPPI
-        
-        // Calculate required pace
-        let requiredPace = kmpBridge.calculateRequiredPace(for: targetPPI, distance: run.distance)
-        
-        // Determine difficulty based on improvement needed
-        let difficulty = determineDifficulty(currentPPI: currentPPI, targetPPI: targetPPI)
-        
-        // Generate description
-        let description = generateDescription(
-            currentPace: run.averagePace,
-            targetPace: requiredPace,
-            projectedGain: projectedGain,
-            difficulty: difficulty
-        )
-        
-        return Recommendation(
-            targetPace: requiredPace,
-            projectedGain: projectedGain,
-            description: description,
-            difficulty: difficulty
-        )
-    }
-    
-    /// Calculates target PPI based on current performance
-    private func calculateTargetPPI(currentPPI: Double) -> Double {
-        // Progressive improvement based on current level
-        switch currentPPI {
-        case 0..<200:
-            return currentPPI + 50  // Large improvement for beginners
-        case 200..<400:
-            return currentPPI + 30  // Moderate improvement
-        case 400..<600:
-            return currentPPI + 20  // Smaller improvement
-        case 600..<800:
-            return currentPPI + 15  // Even smaller improvement
-        default:
-            return currentPPI + 10  // Minimal improvement for elite
+        if distanceKm < 5.0 {
+            recommendations.append(Recommendation(
+                type: .distance,
+                title: "Build Endurance",
+                description: "Consider increasing distance gradually to improve aerobic capacity",
+                priority: .medium
+            ))
+        } else if distanceKm > 15.0 {
+            recommendations.append(Recommendation(
+                type: .distance,
+                title: "Focus on Speed",
+                description: "Add shorter, faster runs to improve pace and PPI",
+                priority: .high
+            ))
         }
-    }
-    
-    /// Determines difficulty level based on improvement needed
-    private func determineDifficulty(currentPPI: Double, targetPPI: Double) -> Recommendation.Difficulty {
-        let improvement = targetPPI - currentPPI
         
-        switch improvement {
-        case 0..<10:
-            return .easy
-        case 10..<25:
-            return .moderate
-        case 25..<50:
-            return .hard
-        default:
-            return .extreme
+        // Pace-based recommendations
+        let paceMinutes = run.averagePace / 60.0
+        
+        if paceMinutes > 6.0 {
+            recommendations.append(Recommendation(
+                type: .pace,
+                title: "Improve Pace",
+                description: "Work on speed with interval training and tempo runs",
+                priority: .high
+            ))
+        } else if paceMinutes < 4.0 {
+            recommendations.append(Recommendation(
+                type: .pace,
+                title: "Maintain Consistency",
+                description: "Excellent pace! Focus on maintaining this level",
+                priority: .low
+            ))
         }
-    }
-    
-    /// Generates a human-readable description of the recommendation
-    private func generateDescription(
-        currentPace: Double,
-        targetPace: Double,
-        projectedGain: Double,
-        difficulty: Recommendation.Difficulty
-    ) -> String {
-        let paceImprovement = currentPace - targetPace
-        let paceImprovementFormatted = String(format: "%.1f", paceImprovement)
         
-        switch difficulty {
-        case .easy:
-            return "Easy improvement: \(paceImprovementFormatted)s/km faster for +\(String(format: "%.0f", projectedGain)) PPI"
-        case .moderate:
-            return "Moderate challenge: \(paceImprovementFormatted)s/km faster for +\(String(format: "%.0f", projectedGain)) PPI"
-        case .hard:
-            return "Hard challenge: \(paceImprovementFormatted)s/km faster for +\(String(format: "%.0f", projectedGain)) PPI"
-        case .extreme:
-            return "Extreme challenge: \(paceImprovementFormatted)s/km faster for +\(String(format: "%.0f", projectedGain)) PPI"
+        // PPI-based recommendations
+        if ppi < 200 {
+            recommendations.append(Recommendation(
+                type: .performance,
+                title: "Build Base Fitness",
+                description: "Focus on consistent training to improve overall fitness",
+                priority: .high
+            ))
+        } else if ppi > 500 {
+            recommendations.append(Recommendation(
+                type: .performance,
+                title: "Elite Performance",
+                description: "Outstanding performance! Consider advanced training techniques",
+                priority: .low
+            ))
         }
-    }
-    
-    /// Validates that recommendations are monotonic (better performance = better PPI)
-    func validateRecommendations() -> Bool {
-        logger.info("Validating recommendation monotonicity")
         
-        // Test with different performance levels
-        let testCases: [(distance: Double, duration: Int)] = [
-            (5000, 1800),  // Slow 5K
-            (5000, 1500),  // Moderate 5K
-            (5000, 1200),  // Fast 5K
-        ]
-        
-        var previousPPI: Double = 0
-        
-        for testCase in testCases {
-            let run = RunRecord(
-                distance: testCase.distance,
-                duration: testCase.duration,
-                averagePace: Double(testCase.duration) / (testCase.distance / 1000.0),
-                source: "test",
-                fileName: "test"
-            )
+        // Heart rate recommendations (if available)
+        if let heartRateData = run.heartRateData, !heartRateData.isEmpty {
+            let avgHeartRate = heartRateData.map { $0.heartRate }.reduce(0, +) / heartRateData.count
             
-            do {
-                let analyzedRun = try analyzeRun(run)
-                
-                // Check monotonicity: faster times should have higher PPI
-                if analyzedRun.ppi <= previousPPI {
-                    logger.error("Monotonicity violation: PPI \(analyzedRun.ppi) <= previous \(previousPPI)")
-                    return false
-                }
-                
-                previousPPI = analyzedRun.ppi
-            } catch {
-                logger.error("Failed to analyze test case: \(error)")
-                return false
+            if avgHeartRate > 180 {
+                recommendations.append(Recommendation(
+                    type: .heartRate,
+                    title: "Monitor Intensity",
+                    description: "High heart rate suggests very high intensity - ensure adequate recovery",
+                    priority: .medium
+                ))
             }
         }
         
-        logger.info("Recommendation monotonicity validation passed")
-        return true
+        return recommendations
     }
+    
+    /// Calculates performance metrics for a run
+    private func calculatePerformanceMetrics(for run: RunRecord) -> PerformanceMetrics {
+        let distanceKm = run.distance / 1000.0
+        let paceMinutes = run.averagePace / 60.0
+        
+        // Calculate efficiency (pace per km relative to distance)
+        let efficiency = paceMinutes / distanceKm
+        
+        // Calculate consistency (if splits available)
+        var consistency: Double = 1.0
+        if let splits = run.splits, splits.count > 1 {
+            let paces = splits.map { $0.pace / 60.0 }
+            let avgPace = paces.reduce(0, +) / Double(paces.count)
+            let variance = paces.map { pow($0 - avgPace, 2) }.reduce(0, +) / Double(paces.count)
+            consistency = max(0.1, 1.0 - (variance / avgPace))
+        }
+        
+        return PerformanceMetrics(
+            efficiency: efficiency,
+            consistency: consistency,
+            distanceCategory: getDistanceCategory(distanceKm),
+            paceCategory: getPaceCategory(paceMinutes)
+        )
+    }
+    
+    /// Gets distance category for a given distance
+    private func getDistanceCategory(_ distanceKm: Double) -> DistanceCategory {
+        switch distanceKm {
+        case 0..<3:
+            return .short
+        case 3..<8:
+            return .medium
+        case 8..<15:
+            return .long
+        default:
+            return .ultra
+        }
+    }
+    
+    /// Gets pace category for a given pace
+    private func getPaceCategory(_ paceMinutes: Double) -> PaceCategory {
+        switch paceMinutes {
+        case 0..<4:
+            return .elite
+        case 4..<5:
+            return .advanced
+        case 5..<6:
+            return .intermediate
+        default:
+            return .beginner
+        }
+    }
+}
+
+/// Represents the result of analyzing a run
+struct RunAnalysis {
+    let run: RunRecord
+    let ppi: Double
+    let recommendations: [Recommendation]
+    let metrics: PerformanceMetrics
+    
+    /// Formatted PPI score
+    var formattedPPI: String {
+        return String(format: "%.1f", ppi)
+    }
+    
+    /// Performance level based on PPI
+    var performanceLevel: PerformanceLevel {
+        switch ppi {
+        case 0..<200:
+            return .beginner
+        case 200..<350:
+            return .intermediate
+        case 350..<500:
+            return .advanced
+        default:
+            return .elite
+        }
+    }
+}
+
+/// Represents a performance recommendation
+struct Recommendation: Identifiable {
+    let id = UUID()
+    let type: RecommendationType
+    let title: String
+    let description: String
+    let priority: RecommendationPriority
+    
+    enum RecommendationType {
+        case distance
+        case pace
+        case performance
+        case heartRate
+        case recovery
+    }
+    
+    enum RecommendationPriority {
+        case low
+        case medium
+        case high
+    }
+}
+
+/// Represents performance metrics for a run
+struct PerformanceMetrics {
+    let efficiency: Double
+    let consistency: Double
+    let distanceCategory: DistanceCategory
+    let paceCategory: PaceCategory
+    
+    enum DistanceCategory {
+        case short
+        case medium
+        case long
+        case ultra
+    }
+    
+    enum PaceCategory {
+        case beginner
+        case intermediate
+        case advanced
+        case elite
+    }
+}
+
+/// Performance level based on PPI score
+enum PerformanceLevel: String, CaseIterable {
+    case beginner = "Beginner"
+    case intermediate = "Intermediate"
+    case advanced = "Advanced"
+    case elite = "Elite"
 }

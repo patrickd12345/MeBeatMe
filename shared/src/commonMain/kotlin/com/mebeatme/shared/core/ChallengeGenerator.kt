@@ -3,6 +3,7 @@ package com.mebeatme.shared.core
 import com.mebeatme.shared.model.ChallengeOption
 import com.mebeatme.shared.model.DistanceBucket
 import kotlin.random.Random
+import kotlinx.datetime.Clock
 
 /**
  * Generates multiple-choice challenges to beat historical best performance
@@ -77,7 +78,7 @@ class ChallengeGenerator(
         val targetDuration = PurdyPointsCalculator.calculateRequiredTime(targetDistance, targetPPI)
         
         return ChallengeOption(
-            id = "short_fierce_${System.currentTimeMillis()}",
+            id = "short_fierce_${Clock.System.now().toEpochMilliseconds()}",
             title = "Short & Fierce",
             description = "Hold ${PaceUtils.formatPace(targetPace)}/km for ${formatDuration(targetDuration)} to top your best ${bucket.label.lowercase()} equivalent",
             targetPace = targetPace,
@@ -97,7 +98,7 @@ class ChallengeGenerator(
         val targetDuration = PurdyPointsCalculator.calculateRequiredTime(targetDistance, targetPPI)
         
         return ChallengeOption(
-            id = "tempo_boost_${System.currentTimeMillis()}",
+            id = "tempo_boost_${Clock.System.now().toEpochMilliseconds()}",
             title = "Tempo Boost",
             description = "Sustain ${PaceUtils.formatPace(targetPace)}/km for ${formatDuration(targetDuration)} to beat your tempo index",
             targetPace = targetPace,
@@ -117,7 +118,7 @@ class ChallengeGenerator(
         val targetDuration = PurdyPointsCalculator.calculateRequiredTime(targetDistance, targetPPI)
         
         return ChallengeOption(
-            id = "ease_into_it_${System.currentTimeMillis()}",
+            id = "ease_into_it_${Clock.System.now().toEpochMilliseconds()}",
             title = "Ease Into It",
             description = "Cruise at ${PaceUtils.formatPace(targetPace)}/km for ${formatDuration(targetDuration)} and still crack your long-run PPI",
             targetPace = targetPace,
@@ -138,7 +139,7 @@ class ChallengeGenerator(
         val targetDuration = PurdyPointsCalculator.calculateRequiredTime(targetDistance, targetPPI)
         
         return ChallengeOption(
-            id = "surprise_${System.currentTimeMillis()}",
+            id = "surprise_${Clock.System.now().toEpochMilliseconds()}",
             title = "Surprise Me",
             description = "Let MeBeatMe choose a playful but beatable run for you",
             targetPace = targetPace,
@@ -205,7 +206,7 @@ class ChallengeGenerator(
         val minutes = seconds / 60
         val remainingSeconds = seconds % 60
         return if (minutes > 0) {
-            String.format("%d:%02d", minutes, remainingSeconds)
+            "$minutes:${remainingSeconds.toString().padStart(2, '0')}"
         } else {
             "${remainingSeconds}s"
         }

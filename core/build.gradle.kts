@@ -19,7 +19,7 @@ android {
 }
 
 kotlin {
-    android()
+    androidTarget()
     iosArm64()
     iosX64()
     iosSimulatorArm64()

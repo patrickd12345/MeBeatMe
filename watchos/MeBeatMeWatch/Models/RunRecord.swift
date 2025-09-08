@@ -10,6 +10,9 @@ struct RunRecord: Codable, Identifiable, Equatable {
     let splits: [Split]?
     let source: String // "gpx", "tcx", "fit", etc.
     let fileName: String
+    let heartRateData: [HeartRatePoint]?
+    let elevationGain: Double? // meters
+    let temperature: Double? // celsius
     
     init(
         id: UUID = UUID(),
@@ -19,7 +22,10 @@ struct RunRecord: Codable, Identifiable, Equatable {
         averagePace: Double,
         splits: [Split]? = nil,
         source: String,
-        fileName: String
+        fileName: String,
+        heartRateData: [HeartRatePoint]? = nil,
+        elevationGain: Double? = nil,
+        temperature: Double? = nil
     ) {
         self.id = id
         self.date = date
@@ -29,6 +35,9 @@ struct RunRecord: Codable, Identifiable, Equatable {
         self.splits = splits
         self.source = source
         self.fileName = fileName
+        self.heartRateData = heartRateData
+        self.elevationGain = elevationGain
+        self.temperature = temperature
     }
 }
 
@@ -38,17 +47,37 @@ struct Split: Codable, Identifiable, Equatable {
     let distance: Double // meters
     let duration: Int // seconds
     let pace: Double // seconds per kilometer
+    let averageHeartRate: Int? // bpm
     
     init(
         id: UUID = UUID(),
         distance: Double,
         duration: Int,
-        pace: Double
+        pace: Double,
+        averageHeartRate: Int? = nil
     ) {
         self.id = id
         self.distance = distance
         self.duration = duration
         self.pace = pace
+        self.averageHeartRate = averageHeartRate
+    }
+}
+
+/// Represents heart rate data at a specific point in time
+struct HeartRatePoint: Codable, Identifiable, Equatable {
+    let id: UUID
+    let timestamp: Date
+    let heartRate: Int // bpm
+    
+    init(
+        id: UUID = UUID(),
+        timestamp: Date,
+        heartRate: Int
+    ) {
+        self.id = id
+        self.timestamp = timestamp
+        self.heartRate = heartRate
     }
 }
 
@@ -59,19 +88,22 @@ struct Bests: Codable, Equatable {
     var bestHalfSec: Int?
     var bestFullSec: Int?
     var highestPPILast90Days: Double?
+    var lastUpdated: Date
     
     init(
         best5kSec: Int? = nil,
         best10kSec: Int? = nil,
         bestHalfSec: Int? = nil,
         bestFullSec: Int? = nil,
-        highestPPILast90Days: Double? = nil
+        highestPPILast90Days: Double? = nil,
+        lastUpdated: Date = Date()
     ) {
         self.best5kSec = best5kSec
         self.best10kSec = best10kSec
         self.bestHalfSec = bestHalfSec
         self.bestFullSec = bestFullSec
         self.highestPPILast90Days = highestPPILast90Days
+        self.lastUpdated = lastUpdated
     }
     
     /// Returns the best time for a given distance bucket
@@ -112,5 +144,13 @@ struct Bests: Codable, Equatable {
                 bestFullSec = time
             }
         }
+        
+        lastUpdated = Date()
+    }
+    
+    /// Returns a formatted string for the best time at a given distance
+    func formattedBestTime(for distance: Double) -> String? {
+        guard let time = bestTime(for: distance) else { return nil }
+        return Units.formatTime(time)
     }
 }

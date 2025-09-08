@@ -8,6 +8,7 @@ import com.mebeatme.shared.model.RunSession
 import com.mebeatme.shared.model.Score
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.Clock
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
@@ -135,7 +136,7 @@ class MeBeatMeService {
     }
     
     private fun generateSessionId(): String {
-        return "session_${System.currentTimeMillis()}_${(1000..9999).random()}"
+        return "session_${Clock.System.now().toEpochMilliseconds()}_${(1000..9999).random()}"
     }
 }
 

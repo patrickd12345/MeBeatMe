@@ -114,7 +114,7 @@ object PaceUtils {
     fun formatPace(secondsPerKm: Double): String {
         val minutes = (secondsPerKm / 60).toInt()
         val seconds = (secondsPerKm % 60).toInt()
-        return String.format("%d:%02d", minutes, seconds)
+        return "$minutes:${seconds.toString().padStart(2, '0')}"
     }
     
     fun parsePace(paceString: String): Double {

@@ -23,6 +23,14 @@ class FileImportCoordinator {
         var fileExtension: String {
             return rawValue
         }
+        
+        var displayName: String {
+            switch self {
+            case .gpx: return "GPX (GPS Exchange)"
+            case .tcx: return "TCX (Training Center)"
+            case .fit: return "FIT (Flexible and Interoperable Data Transfer)"
+            }
+        }
     }
     
     /// Detects file format from URL and delegates to appropriate parser
@@ -52,5 +60,15 @@ class FileImportCoordinator {
     func canImportFile(at url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         return SupportedFormat(rawValue: fileExtension) != nil
+    }
+    
+    /// Returns supported file extensions for file picker
+    func supportedFileExtensions() -> [String] {
+        return SupportedFormat.allCases.map { $0.fileExtension }
+    }
+    
+    /// Returns supported MIME types for file picker
+    func supportedMimeTypes() -> [String] {
+        return SupportedFormat.allCases.map { $0.mimeType }
     }
 }
