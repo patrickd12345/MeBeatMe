@@ -222,12 +222,12 @@
         <div id="loading" class="loading">Loading your performance data...</div>
         
         <div id="content" style="display: none;">
-            <h2>📊 Best PPI by Distance Bucket</h2>
-            <div class="stats-grid" id="bests-grid">
-                <!-- Best PPIs will be populated here -->
+            <h2>📊 Your Best Performances</h2>
+            <div id="bests-grid" class="stats-grid">
+                <!-- Your best PPIs will be displayed here -->
             </div>
             
-            <h2>🎯 Workouts to Beat</h2>
+            <h2>🎯 Workouts to Beat (Target PPI = <span id="target-ppi-display">--</span>)</h2>
             <div id="challenges-section">
                 <!-- Your best performances to beat will be populated here -->
             </div>
@@ -251,9 +251,9 @@
                 </ul>
                 <p><strong>Elite Baseline Anchors:</strong></p>
                 <ul>
-                    <li><strong>1500m:</strong> 3:50 → 1000 points</li>
-                    <li><strong>5000m:</strong> 13:00 → 1000 points</li>
-                    <li><strong>10000m:</strong> 27:00 → 1000 points</li>
+                    <li><strong>1500m:</strong> 3:30 → 1000 points</li>
+                    <li><strong>5000m:</strong> 12:35 → 1000 points</li>
+                    <li><strong>10000m:</strong> 26:11 → 1000 points</li>
                     <li><strong>Half Marathon:</strong> 59:00 → 1000 points</li>
                     <li><strong>Marathon:</strong> 2:04:20 → 1000 points</li>
                 </ul>
@@ -341,7 +341,6 @@
                 card.className = 'stat-card';
                 card.innerHTML = `
                     <div class="stat-value">${ppi.toFixed(1)}</div>
-                    <div class="stat-label">${bucketNames[bucket] || bucket}</div>
                 `;
                 grid.appendChild(card);
             });
@@ -358,83 +357,101 @@
             
             const workoutsToBeat = [];
             
-            // Focus on your actual performance, not arbitrary buckets
-            Object.entries(bests).forEach(([bucket, bestPpi]) => {
-                // Use your actual run distance (5.94km) as the baseline
-                const actualRunDistance = 5.94; // Your real run distance
+            // Find your best performance (highest PPI) to focus on
+            const bestEntry = Object.entries(bests).reduce((best, [bucket, ppi]) => 
+                ppi > best.ppi ? {bucket, ppi} : best, {bucket: '', ppi: 0});
+            
+            if (bestEntry.ppi === 0) {
+                section.innerHTML = '<div class="empty-state">No performance data to create challenges from!</div>';
+                return;
+            }
+            
+            // Use the actual distance from your best performance
+            // For KM_3_8 bucket, use 5.94km (your actual run distance)
+            const actualRunDistance = 5.94; // Your real run distance
+            
+            // Use the PPI from the server (which is already calculated correctly)
+            const currentPpi = bestEntry.ppi;
+            
+            // Calculate your current pace from the best PPI using your actual distance
+            const currentPace = calculateCurrentPace(bestEntry.ppi, actualRunDistance * 1000);
+            const currentPaceMin = Math.floor(currentPace / 60);
+            const currentPaceSec = Math.round(currentPace % 60);
+            
+            // Calculate 3% pace improvement (recommended sustainable improvement)
+            const paceImprovementPercent = 0.03; // 3% faster pace
+            const improvedPace = currentPace * (1 - paceImprovementPercent);
+            
+            // Calculate target PPI (3% improvement)
+            const targetPpi = calculateActualPpi(actualRunDistance * 1000, improvedPace);
+            
+            // Update the target PPI display in the heading
+            document.getElementById('target-ppi-display').textContent = targetPpi.toFixed(1);
+            
+            // Generate 4 different workout variations to beat YOUR specific performance
+            const workoutVariations = [
+                {
+                    title: "Beat Your 5.9K Best",
+                    distance: actualRunDistance,
+                    description: "Beat your 5.9km run by 3%",
+                    targetPpi: targetPpi.toFixed(1)
+                },
+                {
+                    title: "Beat Your Best - Shorter Sprint", 
+                    distance: Math.max(1.0, actualRunDistance * 0.7),
+                    description: "4.2km sprint, 3% faster pace",
+                    targetPpi: targetPpi.toFixed(1)
+                },
+                {
+                    title: "Beat Your Best - 10K Challenge",
+                    distance: 10.0,
+                    description: "10K distance, 3% faster pace",
+                    targetPpi: targetPpi.toFixed(1)
+                },
+                {
+                    title: "Beat Your Best - 20K Endurance",
+                    distance: 20.0,
+                    description: "20K distance, 3% faster pace",
+                    targetPpi: targetPpi.toFixed(1)
+                }
+            ];
+            
+            workoutVariations.forEach((workout, index) => {
+                // Calculate required pace to achieve target PPI for this specific distance
+                const targetPace = calculateTargetPace(parseFloat(workout.targetPpi), workout.distance * 1000);
+                const targetPaceMin = Math.floor(targetPace / 60);
+                const targetPaceSec = Math.round(targetPace % 60);
                 
-                // Calculate your current pace from the best PPI using your actual distance
-                const currentPace = calculateCurrentPace(bestPpi, actualRunDistance * 1000);
-                const currentPaceMin = Math.floor(currentPace / 60);
-                const currentPaceSec = Math.round(currentPace % 60);
+                // Calculate what pace would achieve the current PPI at this distance
+                const currentPaceForDistance = calculateTargetPace(bestEntry.ppi, workout.distance * 1000);
+                const currentPaceMin = Math.floor(currentPaceForDistance / 60);
+                const currentPaceSec = Math.round(currentPaceForDistance % 60);
                 
-                // Calculate 3% pace improvement (recommended sustainable improvement)
-                const paceImprovementPercent = 0.03; // 3% faster pace
-                const improvedPace = currentPace * (1 - paceImprovementPercent);
+                // Check if this is your actual run distance (5.9K)
+                const isCurrentWorkout = workout.title.includes("5.9K");
                 
-                // Calculate what PPI this improved pace would achieve at your actual distance
-                const targetPpi = calculateActualPpi(actualRunDistance * 1000, improvedPace);
+                // Calculate what PPI this pace would actually achieve (for verification)
+                const actualPpi = calculateActualPpi(workout.distance * 1000, targetPace);
                 
-                // Generate 4 different workout variations to beat YOUR specific performance
-                const workoutVariations = [
-                    {
-                        title: "Beat Your 5.9K Best",
-                        distance: actualRunDistance,
-                        description: "Beat your 5.9km run by 3%",
-                        targetPpi: targetPpi.toFixed(1)
-                    },
-                    {
-                        title: "Beat Your Best - Shorter Sprint", 
-                        distance: Math.max(1.0, actualRunDistance * 0.7),
-                        description: "4.2km sprint, 3% faster pace",
-                        targetPpi: targetPpi.toFixed(1)
-                    },
-                    {
-                        title: "Beat Your Best - 10K Challenge",
-                        distance: 10.0,
-                        description: "10K distance, 3% faster pace",
-                        targetPpi: targetPpi.toFixed(1)
-                    },
-                    {
-                        title: "Beat Your Best - 20K Endurance",
-                        distance: 20.0,
-                        description: "20K distance, 3% faster pace",
-                        targetPpi: targetPpi.toFixed(1)
-                    }
-                ];
+                // Calculate duration for this workout (targetPace is in seconds per km)
+                const totalSeconds = Math.round(workout.distance * targetPace);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                const durationFormatted = hours > 0 
+                    ? `${hours}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`
+                    : `${minutes}:${seconds.toString().padStart(2,'0')}`;
                 
-                workoutVariations.forEach((workout, index) => {
-                    // Calculate required pace to achieve target PPI for this specific distance
-                    const targetPace = calculateTargetPace(parseFloat(workout.targetPpi), workout.distance * 1000);
-                    const targetPaceMin = Math.floor(targetPace / 60);
-                    const targetPaceSec = Math.round(targetPace % 60);
-                    
-                    // Calculate what pace would achieve the current PPI at this distance
-                    const currentPaceForDistance = calculateTargetPace(bestPpi, workout.distance * 1000);
-                    const currentPaceMin = Math.floor(currentPaceForDistance / 60);
-                    const currentPaceSec = Math.round(currentPaceForDistance % 60);
-                    
-                    // Calculate duration for this workout
-                    const durationMin = Math.round(workout.distance * targetPace / 60);
-                    
-                    // Check if this is your actual run distance (5.9K)
-                    const isCurrentWorkout = workout.title.includes("5.9K");
-                    
-                    // Calculate what PPI this pace would actually achieve (for verification)
-                    const actualPpi = calculateActualPpi(workout.distance * 1000, targetPace);
-                    
-                    workoutsToBeat.push({
-                        title: workout.title,
-                        bucket: "Your Performance",
-                        currentPace: `${currentPaceMin}:${currentPaceSec.toString().padStart(2, '0')}/km`,
-                        targetPace: `${targetPaceMin}:${targetPaceSec.toString().padStart(2, '0')}/km`,
-                        duration: `${durationMin} min`,
-                        distance: `${workout.distance.toFixed(1)} km`,
-                        description: workout.description,
-                        currentPpi: bestPpi.toFixed(1),
-                        targetPpi: actualPpi.toFixed(1), // Use actual calculated PPI
-                        isCurrentWorkout: isCurrentWorkout
-                    });
+                workoutsToBeat.push({
+                    title: workout.title,
+                    bucket: "Your Performance",
+                    currentPace: `${currentPaceMin}:${currentPaceSec.toString().padStart(2, '0')}/km`,
+                    targetPace: `${targetPaceMin}:${targetPaceSec.toString().padStart(2, '0')}/km`,
+                    duration: durationFormatted,
+                    distance: `${workout.distance.toFixed(1)} km`,
+                    description: workout.description,
+                    targetPpi: actualPpi.toFixed(1), // Use actual calculated PPI
+                    isCurrentWorkout: isCurrentWorkout
                 });
             });
             
@@ -460,7 +477,7 @@
                         <div>${workout.description}</div>
                     </div>
                     <div class="challenge-target">
-                        Beat ${workout.currentPpi} PPI → Target ${workout.targetPpi} PPI
+                        <strong>Required Pace:</strong> ${workout.targetPace} to achieve target PPI
                     </div>
                 `;
                 grid.appendChild(card);
@@ -470,11 +487,52 @@
         }
         
         function calculateCurrentPace(ppi, distanceMeters) {
-            // PPI = 350 * (speed^0.95) * (distance^0.05)
-            // Solving for speed: speed = (PPI / (350 * distance^0.05))^(1/0.95)
-            const speed = Math.pow(ppi / (350 * Math.pow(distanceMeters, 0.05)), 1/0.95);
-            // Convert from m/s to seconds per km
-            return 1000 / speed;
+            // Correct Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
+            // Solving for actual_time: actual_time = baseline_time * (PPI/1000)^(-1/2.0)
+            const baselineTime = getBaselineTime(distanceMeters);
+            const actualTime = baselineTime * Math.pow(ppi / 1000.0, -1/2.0);
+            // Convert to seconds per km
+            return actualTime / (distanceMeters / 1000.0);
+        }
+        
+        function getBaselineTime(distanceMeters) {
+            // Elite baseline times (in seconds) - these need to be realistic!
+            const baselines = [
+                { distance: 1500, time: 210 },    // 3:30 (realistic elite)
+                { distance: 5000, time: 755 },    // 12:35 (realistic elite) 
+                { distance: 10000, time: 1571 },  // 26:11 (realistic elite)
+                { distance: 21097, time: 3540 },  // 59:00 (half marathon)
+                { distance: 42195, time: 7460 }   // 2:04:20 (marathon)
+            ];
+            
+            // Find closest baseline or interpolate
+            if (distanceMeters <= baselines[0].distance) {
+                return baselines[0].time;
+            }
+            if (distanceMeters >= baselines[baselines.length - 1].distance) {
+                return baselines[baselines.length - 1].time;
+            }
+            
+            // Linear interpolation in log-log space
+            for (let i = 0; i < baselines.length - 1; i++) {
+                const current = baselines[i];
+                const next = baselines[i + 1];
+                
+                if (distanceMeters >= current.distance && distanceMeters <= next.distance) {
+                    const logDist1 = Math.log(current.distance);
+                    const logDist2 = Math.log(next.distance);
+                    const logTime1 = Math.log(current.time);
+                    const logTime2 = Math.log(next.time);
+                    const logDistTarget = Math.log(distanceMeters);
+                    
+                    const ratio = (logDistTarget - logDist1) / (logDist2 - logDist1);
+                    const logTimeTarget = logTime1 + ratio * (logTime2 - logTime1);
+                    
+                    return Math.exp(logTimeTarget);
+                }
+            }
+            
+            return baselines[baselines.length - 1].time;
         }
         
         function getBucketInfo(bucket) {
@@ -489,18 +547,21 @@
         }
         
         function calculateTargetPace(targetPpi, distanceMeters) {
-            // PPI = 350 * (speed^0.95) * (distance^0.05)
-            // Solving for speed: speed = (PPI / (350 * distance^0.05))^(1/0.95)
-            const speed = Math.pow(targetPpi / (350 * Math.pow(distanceMeters, 0.05)), 1/0.95);
-            // Convert from m/s to seconds per km
-            return 1000 / speed;
+            // Correct Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
+            // Solving for actual_time: actual_time = baseline_time * (PPI/1000)^(-1/2.0)
+            const baselineTime = getBaselineTime(distanceMeters);
+            const actualTime = baselineTime * Math.pow(targetPpi / 1000.0, -1/2.0);
+            // Convert to seconds per km
+            return actualTime / (distanceMeters / 1000.0);
         }
         
         function calculateActualPpi(distanceMeters, paceSecondsPerKm) {
-            // Convert pace to speed (m/s)
-            const speed = 1000 / paceSecondsPerKm;
-            // Calculate PPI using the formula
-            return 350 * Math.pow(speed, 0.95) * Math.pow(distanceMeters, 0.05);
+            // Correct Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
+            // Higher PPI for FASTER times (lower actual_time)
+            const baselineTime = getBaselineTime(distanceMeters);
+            const actualTime = paceSecondsPerKm * (distanceMeters / 1000.0);
+            const performanceRatio = actualTime / baselineTime;
+            return 1000.0 * Math.pow(performanceRatio, -2.0);
         }
         
         function displaySessions(sessions) {

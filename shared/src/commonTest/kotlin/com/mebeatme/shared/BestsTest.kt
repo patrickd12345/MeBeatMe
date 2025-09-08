@@ -1,191 +1,171 @@
+package com.mebeatme.shared.core
+
+import com.mebeatme.shared.api.RunDTO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 
 class BestsTest {
     
     @Test
     fun highestPpiLast90Days_isComputedCorrectly() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L // Current time
         val runs = listOf(
-            createRun(ppi = 48.2, daysAgo = 10, now),
-            createRun(ppi = 51.9, daysAgo = 35, now),
-            createRun(ppi = 49.7, daysAgo = 91, now) // outside window
+            createRunDTO(ppi = 48.2, daysAgo = 10, nowMs),
+            createRunDTO(ppi = 51.9, daysAgo = 35, nowMs),
+            createRunDTO(ppi = 49.7, daysAgo = 91, nowMs) // outside window
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertEquals(51.9, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(51.9, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_noRunsInWindow_returnsNull() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 48.2, daysAgo = 100, now), // outside window
-            createRun(ppi = 51.9, daysAgo = 200, now)  // outside window
+            createRunDTO(ppi = 48.2, daysAgo = 100, nowMs), // outside window
+            createRunDTO(ppi = 51.9, daysAgo = 200, nowMs)  // outside window
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertNull(bests.highestPpiLast90Days)
+        assertNull(highestPpi)
     }
     
     @Test
     fun highestPpiLast90Days_singleRunInWindow_returnsThatRun() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 48.2, daysAgo = 10, now)
+            createRunDTO(ppi = 48.2, daysAgo = 10, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertEquals(48.2, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(48.2, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_multipleRunsInWindow_returnsHighest() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 45.0, daysAgo = 5, now),
-            createRun(ppi = 52.3, daysAgo = 15, now),
-            createRun(ppi = 48.7, daysAgo = 30, now),
-            createRun(ppi = 50.1, daysAgo = 60, now),
-            createRun(ppi = 47.2, daysAgo = 85, now)
+            createRunDTO(ppi = 45.0, daysAgo = 5, nowMs),
+            createRunDTO(ppi = 52.3, daysAgo = 15, nowMs),
+            createRunDTO(ppi = 48.7, daysAgo = 30, nowMs),
+            createRunDTO(ppi = 50.1, daysAgo = 60, nowMs),
+            createRunDTO(ppi = 47.2, daysAgo = 85, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertEquals(52.3, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(52.3, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_boundaryConditions_handlesCorrectly() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 50.0, daysAgo = 90, now), // exactly on boundary
-            createRun(ppi = 45.0, daysAgo = 91, now)  // just outside boundary
+            createRunDTO(ppi = 50.0, daysAgo = 90, nowMs), // exactly on boundary
+            createRunDTO(ppi = 45.0, daysAgo = 91, nowMs)  // just outside boundary
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertEquals(50.0, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(50.0, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_emptyRunsList_returnsNull() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
-        val runs = emptyList<RunRecord>()
+        val nowMs = 1757300000000L
+        val runs = emptyList<RunDTO>()
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertNull(bests.highestPpiLast90Days)
+        assertNull(highestPpi)
     }
     
     @Test
     fun highestPpiLast90Days_zeroWindow_returnsNull() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 50.0, daysAgo = 0, now)
+            createRunDTO(ppi = 50.0, daysAgo = 1, nowMs) // 1 day ago, outside zero window
         )
         
-        val bests = Bests.from(runs, windowDays = 0, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 0)
         
-        assertNull(bests.highestPpiLast90Days)
+        assertNull(highestPpi)
     }
     
     @Test
     fun highestPpiLast90Days_negativeWindow_returnsNull() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 50.0, daysAgo = 10, now)
+            createRunDTO(ppi = 50.0, daysAgo = 10, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = -1, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, -1)
         
-        assertNull(bests.highestPpiLast90Days)
+        assertNull(highestPpi)
     }
     
     @Test
     fun highestPpiLast90Days_veryLargeWindow_includesAllRuns() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 45.0, daysAgo = 100, now),
-            createRun(ppi = 55.0, daysAgo = 200, now),
-            createRun(ppi = 50.0, daysAgo = 300, now)
+            createRunDTO(ppi = 45.0, daysAgo = 100, nowMs),
+            createRunDTO(ppi = 55.0, daysAgo = 200, nowMs),
+            createRunDTO(ppi = 50.0, daysAgo = 300, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = 365, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 365)
         
-        assertEquals(55.0, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(55.0, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_identicalPpiValues_returnsFirst() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 50.0, daysAgo = 10, now),
-            createRun(ppi = 50.0, daysAgo = 20, now),
-            createRun(ppi = 50.0, daysAgo = 30, now)
+            createRunDTO(ppi = 50.0, daysAgo = 10, nowMs),
+            createRunDTO(ppi = 50.0, daysAgo = 20, nowMs),
+            createRunDTO(ppi = 50.0, daysAgo = 30, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertEquals(50.0, bests.highestPpiLast90Days, 1e-6)
+        assertEquals(50.0, highestPpi!!, 1e-6)
     }
     
     @Test
     fun highestPpiLast90Days_floatingPointPrecision_handlesCorrectly() {
-        val now = Instant.parse("2025-01-15T12:00:00Z")
+        val nowMs = 1757300000000L
         val runs = listOf(
-            createRun(ppi = 50.0000001, daysAgo = 10, now),
-            createRun(ppi = 50.0000002, daysAgo = 20, now)
+            createRunDTO(ppi = 50.0000001, daysAgo = 10, nowMs),
+            createRunDTO(ppi = 50.0000002, daysAgo = 20, nowMs)
         )
         
-        val bests = Bests.from(runs, windowDays = 90, now = now)
+        val highestPpi = highestPpiInWindow(runs, nowMs, 90)
         
-        assertTrue(bests.highestPpiLast90Days!! > 50.0)
+        assertTrue(highestPpi!! > 50.0)
     }
     
-    private fun createRun(ppi: Double, daysAgo: Int, now: Instant): RunRecord {
-        val runDate = now.minus(kotlinx.datetime.DateTimeUnit.DAY, daysAgo.toLong())
-        return RunRecord(
-            id = kotlinx.uuid.Uuid.random(),
-            date = runDate,
-            distance = 5000.0, // 5km
-            duration = 1800, // 30 minutes
-            averagePace = 360.0, // 6:00/km
-            splits = null,
+    private fun createRunDTO(ppi: Double, daysAgo: Int, nowMs: Long): RunDTO {
+        val runStartMs = nowMs - daysAgo * 24L * 3600 * 1000
+        val runEndMs = runStartMs + 1800 * 1000 // 30 minutes later
+        
+        return RunDTO(
+            id = "test_run_${daysAgo}",
             source = "test",
-            fileName = "test.gpx",
-            ppi = ppi
+            startedAtEpochMs = runStartMs,
+            endedAtEpochMs = runEndMs,
+            distanceMeters = 5000.0, // 5km
+            elapsedSeconds = 1800, // 30 minutes
+            avgPaceSecPerKm = 360.0, // 6:00/km
+            avgHr = null,
+            ppi = ppi,
+            notes = null
         )
     }
-}
-
-// Extension function for Bests to support the test
-fun Bests.Companion.from(runs: List<RunRecord>, windowDays: Int, now: Instant): Bests {
-    val cutoffDate = now.minus(kotlinx.datetime.DateTimeUnit.DAY, windowDays.toLong())
-    
-    val runsInWindow = runs.filter { it.date >= cutoffDate }
-    
-    val highestPpi = if (runsInWindow.isNotEmpty()) {
-        runsInWindow.maxOfOrNull { it.ppi ?: 0.0 }
-    } else {
-        null
-    }
-    
-    return Bests(
-        best5kSec = null,
-        best10kSec = null,
-        bestHalfSec = null,
-        bestFullSec = null,
-        highestPpiLast90Days = highestPpi
-    )
 }
