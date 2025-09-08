@@ -1,4 +1,98 @@
-# Ignore Xcode user data and secrets
-watchos/Secrets.plist
-.DS_Store
+# Gradle
 .gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Android Studio
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+local.properties
+proguard/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Kotlin
+*.kt.bak
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# watchOS specific
+watchos/build/
+watchos/Frameworks/Shared.xcframework
+watchos/MeBeatMeWatchApp.app
+watchos/MeBeatMeWatchTests.xctest
+
+# Test files
+TestCubicPurdy.*
+TestPurdyConversion.*
+TestPurdyPoints.*
+ScoreRangeTest.*
+CalculatePurdyScore.*
+FindCorrectTs.*
+test_purdy_conversion.*
+
+# Server files
+FitFileServer*.class
+SimpleServer.class
+SimpleServer.kt
+
+# Data files
+mebeatme_*.txt
+upload_*.fit
+
+# JDK
+jdk-*/
+java*.zip
+
+# CI artifacts
+artifacts/
+
+# Others
+*.fit

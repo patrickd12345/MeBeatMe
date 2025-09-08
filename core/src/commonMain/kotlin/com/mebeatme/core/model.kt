@@ -1,5 +1,6 @@
 package com.mebeatme.core
 
+import com.mebeatme.core.ppi.PpiEngine
 import kotlinx.serialization.Serializable
 
 @Serializable data class RunSession(
@@ -30,6 +31,6 @@ fun bucketFor(distanceM: Double): Bucket = when {
     val sessionId: String,
     val ppi: Double,
     val bucket: Bucket,
-    val curveVersion: String = PpiCurve.version,
+    val curveVersion: String = PpiEngine.getCurrentModelVersion(),
     val corrections: Corrections = Corrections()
 )

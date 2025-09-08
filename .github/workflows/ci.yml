@@ -1,0 +1,169 @@
+name: CI
+on:
+  push:
+    branches: [ main, develop, feature/** ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Build KMP iOS framework on macOS
+  kmp-ios-xcframework:
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Build KMP iOS XCFramework
+        run: |
+          ./gradlew :shared:clean :shared:assembleXCFramework
+          mkdir -p artifacts
+          cp -R shared/build/XCFrameworks/debug/Shared.xcframework artifacts/
+          
+      - name: Upload XCFramework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shared.xcframework
+          path: artifacts/Shared.xcframework
+          retention-days: 30
+
+  # Build watchOS app
+  watchos-build:
+    needs: kmp-ios-xcframework
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download XCFramework artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Shared.xcframework
+          path: watchos/Frameworks
+          
+      - name: Setup Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          
+      - name: Build watchOS app
+        run: |
+          xcodebuild \
+            -project watchos/MeBeatMe.xcodeproj \
+            -scheme MeBeatMeWatchApp \
+            -configuration Debug \
+            -destination 'generic/platform=watchOS' \
+            -derivedDataPath build \
+            build
+            
+      - name: Upload watchOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeBeatMe-watchOS-build
+          path: watchos/build
+          retention-days: 30
+
+  # Test KMP shared code (runs on all platforms)
+  test-shared:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Run shared tests
+        run: ./gradlew :shared:test
+        
+      - name: Run server tests
+        run: ./gradlew :server:test
+        
+      - name: Run web tests
+        run: ./gradlew :web:test
+
+  # Build and test server
+  test-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Test server
+        run: ./gradlew :server:test
+        
+      - name: Build server
+        run: ./gradlew :server:build
+
+  # Build web app
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Build web app
+        run: ./gradlew :web:build
