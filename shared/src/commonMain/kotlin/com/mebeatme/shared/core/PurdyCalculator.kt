@@ -97,19 +97,3 @@ object PurdyCalculator {
         return baselines.last().timeSeconds
     }
 }
-
-/**
- * Calculate highest PPI in a time window
- * @param runs List of runs to analyze
- * @param nowMs Current time in milliseconds
- * @param days Number of days to look back (default 90)
- * @return Highest PPI in the window, or null if no runs
- */
-fun highestPpiInWindow(runs: List<com.mebeatme.shared.api.RunDTO>, nowMs: Long, days: Int = 90): Double? {
-    val cutoffMs = nowMs - days * 24L * 3600_000
-    
-    return runs
-        .filter { it.startedAtEpochMs >= cutoffMs }
-        .mapNotNull { it.ppi }
-        .maxOrNull()
-}

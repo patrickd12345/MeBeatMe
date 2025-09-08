@@ -46,15 +46,15 @@ fun main() {
                     // Validate runs
                     runs.forEach { run ->
                         if (run.id.isBlank()) {
-                            call.respond(400, ErrorResponse("error", "Run ID cannot be blank"))
+                            call.respond(400, ErrorResponse("invalid_payload", "Run ID cannot be blank"))
                             return@post
                         }
                         if (run.distanceMeters <= 0) {
-                            call.respond(400, ErrorResponse("error", "Distance must be positive"))
+                            call.respond(400, ErrorResponse("invalid_payload", "Distance must be positive"))
                             return@post
                         }
                         if (run.elapsedSeconds <= 0) {
-                            call.respond(400, ErrorResponse("error", "Elapsed time must be positive"))
+                            call.respond(400, ErrorResponse("invalid_payload", "Elapsed time must be positive"))
                             return@post
                         }
                     }
@@ -64,7 +64,7 @@ fun main() {
                     
                     call.respond(SyncRunsResponse("ok", storedCount))
                 } catch (e: Exception) {
-                    call.respond(500, ErrorResponse("error", "Internal server error: ${e.message}"))
+                    call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
                 }
             }
             
@@ -84,7 +84,7 @@ fun main() {
                     
                     call.respond(bests)
                 } catch (e: Exception) {
-                    call.respond(500, ErrorResponse("error", "Internal server error: ${e.message}"))
+                    call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
                 }
             }
         }
