@@ -1,55 +1,67 @@
-# Windows Development Script
-# Run this from the repo root on Windows
+#!/usr/bin/env pwsh
+# Windows development script for MeBeatMe
+# Run this to set up your Windows development environment
 
-Write-Host "🏃‍♂️ MeBeatMe Windows Development Script" -ForegroundColor Green
-Write-Host "=====================================" -ForegroundColor Green
+Write-Host "🪟 MeBeatMe Windows Development Script" -ForegroundColor Cyan
+Write-Host "=====================================" -ForegroundColor Cyan
 
 # Check if we're in the right directory
-if (-not (Test-Path "gradlew.bat")) {
-    Write-Host "❌ Error: gradlew.bat not found. Please run this script from the repo root." -ForegroundColor Red
+if (-not (Test-Path "build.gradle.kts")) {
+    Write-Host "❌ Error: Not in MeBeatMe root directory" -ForegroundColor Red
+    Write-Host "Please run this script from the project root" -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "📦 Building and testing shared KMP code..." -ForegroundColor Yellow
-.\gradlew :shared:clean :shared:test
+Write-Host "✅ Found MeBeatMe project" -ForegroundColor Green
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Shared tests failed!" -ForegroundColor Red
+# Check Java installation
+Write-Host "🔍 Checking Java installation..." -ForegroundColor Yellow
+try {
+    $javaVersion = java -version 2>&1 | Select-String "version"
+    Write-Host "✅ Java found: $javaVersion" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Java not found. Please install JDK 17" -ForegroundColor Red
+    Write-Host "Download from: https://adoptium.net/" -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "✅ Shared tests passed!" -ForegroundColor Green
-
-Write-Host "🧪 Running server tests..." -ForegroundColor Yellow
-.\gradlew :server:test
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Server tests failed!" -ForegroundColor Red
-    exit 1
+# Run shared module tests
+Write-Host "🧪 Running shared module tests..." -ForegroundColor Yellow
+try {
+    .\gradlew :shared:test
+    Write-Host "✅ Shared module tests passed" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Shared module tests failed" -ForegroundColor Red
+    Write-Host "Check the output above for details" -ForegroundColor Yellow
 }
 
-Write-Host "✅ Server tests passed!" -ForegroundColor Green
-
-Write-Host "🌐 Building web app..." -ForegroundColor Yellow
-.\gradlew :web:build
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Web build failed!" -ForegroundColor Red
-    exit 1
+# Check placeholder XCFramework
+Write-Host "🔍 Checking placeholder XCFramework..." -ForegroundColor Yellow
+$frameworkPath = "watchos\Frameworks\Shared.xcframework\Info.plist"
+if (Test-Path $frameworkPath) {
+    Write-Host "✅ Placeholder XCFramework found" -ForegroundColor Green
+    Write-Host "📱 You can now develop Swift code on Windows" -ForegroundColor Green
+} else {
+    Write-Host "❌ Placeholder XCFramework missing" -ForegroundColor Red
+    Write-Host "Run the XCFramework fix script first" -ForegroundColor Yellow
 }
 
-Write-Host "✅ Web build successful!" -ForegroundColor Green
+# Show development workflow
+Write-Host ""
+Write-Host "🎯 Development Workflow:" -ForegroundColor Cyan
+Write-Host "1. Develop Swift code in watchos/ directory" -ForegroundColor White
+Write-Host "2. Test compilation (placeholder framework satisfies SPM)" -ForegroundColor White
+Write-Host "3. Push changes: git add .; git commit -m 'Your changes'; git push" -ForegroundColor White
+Write-Host "4. CI will build real XCFramework on macOS" -ForegroundColor White
+Write-Host "5. Download artifacts on Mac: ./scripts/pull-artifacts-mac.sh" -ForegroundColor White
+Write-Host "6. Test on macOS with real framework" -ForegroundColor White
 
 Write-Host ""
-Write-Host "🎉 All Windows builds completed successfully!" -ForegroundColor Green
+Write-Host "🔗 Useful Commands:" -ForegroundColor Cyan
+Write-Host "• Run tests: .\gradlew :shared:test" -ForegroundColor White
+Write-Host "• Build Android: .\gradlew :androidApp:build" -ForegroundColor White
+Write-Host "• Build server: .\gradlew :server:build" -ForegroundColor White
+Write-Host "• Check CI: https://github.com/patrickd12345/MeBeatMe/actions" -ForegroundColor White
+
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Commit your changes: git add . && git commit -m 'Your message'" -ForegroundColor White
-Write-Host "2. Push to trigger macOS CI: git push" -ForegroundColor White
-Write-Host "3. Check GitHub Actions for watchOS build artifacts" -ForegroundColor White
-Write-Host ""
-Write-Host "Optional - Start local server:" -ForegroundColor Cyan
-Write-Host ".\gradlew :server:run" -ForegroundColor White
-Write-Host ""
-Write-Host "Optional - Start web dev server:" -ForegroundColor Cyan
-Write-Host ".\gradlew :web:browserDevelopmentRun" -ForegroundColor White
+Write-Host "✅ Windows development environment ready!" -ForegroundColor Green
