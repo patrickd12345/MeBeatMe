@@ -1,6 +1,6 @@
 package com.mebeatme.shared.persistence
 
-import com.mebeatme.shared.api.RunDTO
+import com.mebeatme.shared.model.RunDTO
 import com.mebeatme.shared.core.highestPpiInWindow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
