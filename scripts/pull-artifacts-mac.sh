@@ -21,16 +21,17 @@ if ! gh auth status &> /dev/null; then
     exit 1
 fi
 
-# Get the latest CI run
+# Get the latest successful CI run
 echo "📥 Fetching latest CI artifacts..."
-RUN_ID=$(gh run list --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') -w "KMP Artifacts" -L 1 --json databaseId -q '.[0].databaseId')
+RUN_ID=$(gh run list --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') -w "KMP Artifacts" --json databaseId,conclusion --jq '.[]|select(.conclusion=="success")|.databaseId' | head -n1)
 
 if [ -z "$RUN_ID" ]; then
-    echo "❌ Error: No CI runs found. Make sure you've pushed to trigger CI."
+    echo "❌ Error: No successful CI runs found. Make sure you've pushed to trigger CI."
+    echo "💡 Try: gh run list --workflow 'KMP Artifacts' to see recent runs"
     exit 1
 fi
 
-echo "📦 Downloading Shared.xcframework from run $RUN_ID..."
+echo "📦 Downloading Shared.xcframework from successful run $RUN_ID..."
 
 # Create frameworks directory if it doesn't exist
 mkdir -p watchos/Frameworks
