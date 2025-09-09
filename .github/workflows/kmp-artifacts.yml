@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Shared.xcframework
-          path: shared/build/bin/**/shared.framework
+          path: shared/build/XCFrameworks/debug/Shared.xcframework
           retention-days: 30
           
   test:

@@ -45,7 +45,7 @@ fun purdyScore(distanceMeters: Double, durationSec: Int): Double {
     val closestDistance = baselineTimes.keys.minByOrNull { abs(it - distanceMeters) } ?: 5000.0
     val baselineTime = baselineTimes[closestDistance]!!
     
-    // Calculate cubic relationship: P = 1000 × (T₀/T)³
+    // Calculate Purdy score using cubic relationship: P = 1000 × (T₀/T)³
     val ratio = baselineTime.toDouble() / durationSec.toDouble()
     val score = 1000.0 * (ratio * ratio * ratio)
     

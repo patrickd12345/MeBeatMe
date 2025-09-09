@@ -9,19 +9,19 @@ import kotlin.math.*
  */
 object PurdyPointsCalculator {
     
-    // Purdy Points table for different distances (in meters) and times (in seconds)
+    // Purdy Points table for different distances (in meters) and elite times (in seconds)
     // These are the reference points for elite performance
     private val purdyTable = mapOf(
-        100.0 to 1000.0,      // 100m in 10.0s = 1000 points
-        200.0 to 1000.0,      // 200m in 20.0s = 1000 points  
-        400.0 to 1000.0,      // 400m in 45.0s = 1000 points
-        800.0 to 1000.0,      // 800m in 1:45 = 1000 points
-        1500.0 to 1000.0,     // 1500m in 3:30 = 1000 points
-        3000.0 to 1000.0,     // 3000m in 7:30 = 1000 points
-        5000.0 to 1000.0,     // 5000m in 13:00 = 1000 points
-        10000.0 to 1000.0,    // 10000m in 27:00 = 1000 points
-        21097.5 to 1000.0,    // Half marathon in 1:00:00 = 1000 points
-        42195.0 to 1000.0     // Marathon in 2:10:00 = 1000 points
+        100.0 to 10.0,      // 100m in 10.0s = 1000 points
+        200.0 to 20.0,      // 200m in 20.0s = 1000 points  
+        400.0 to 45.0,      // 400m in 45.0s = 1000 points
+        800.0 to 105.0,     // 800m in 1:45 = 1000 points
+        1500.0 to 210.0,    // 1500m in 3:30 = 1000 points
+        3000.0 to 450.0,    // 3000m in 7:30 = 1000 points
+        5000.0 to 780.0,    // 5000m in 13:00 = 1000 points
+        10000.0 to 1620.0,  // 10000m in 27:00 = 1000 points
+        21097.5 to 3540.0,  // Half marathon in 59:00 = 1000 points
+        42195.0 to 7260.0   // Marathon in 2:01:00 = 1000 points
     )
     
     /**
@@ -31,23 +31,16 @@ object PurdyPointsCalculator {
      * @return Performance Index score
      */
     fun calculatePPI(distance: Double, time: Long): Double {
-        val distanceKm = distance / 1000.0
-        val timeMinutes = time / 60.0
-        
         // Find the closest reference distance
-        val referenceDistance = findClosestReference(distanceKm * 1000)
+        val referenceDistance = findClosestReference(distance)
         val referenceTime = purdyTable[referenceDistance]!!
         
-        // Calculate pace ratio
-        val actualPace = timeMinutes / distanceKm
-        val referencePace = (referenceTime / 60.0) / (referenceDistance / 1000.0)
+        // Calculate time ratio (reference time / actual time)
+        val timeRatio = referenceTime.toDouble() / time.toDouble()
         
         // Apply power curve adjustment (Purdy model uses power of ~1.07)
         val powerFactor = 1.07
-        val paceRatio = actualPace / referencePace
-        
-        // Calculate PPI with logarithmic scaling
-        val ppi = 1000.0 * (paceRatio.pow(-powerFactor))
+        val ppi = 1000.0 * (timeRatio.pow(powerFactor))
         
         return ppi.coerceIn(0.0, 2000.0) // Reasonable bounds
     }
@@ -59,18 +52,18 @@ object PurdyPointsCalculator {
      * @return Required pace in seconds per kilometer
      */
     fun calculateRequiredPace(distance: Double, targetPPI: Double): Double {
-        val distanceKm = distance / 1000.0
         val referenceDistance = findClosestReference(distance)
         val referenceTime = purdyTable[referenceDistance]!!
         
         val powerFactor = 1.07
-        val referencePace = (referenceTime / 60.0) / (referenceDistance / 1000.0)
         
-        // Reverse the PPI calculation
-        val paceRatio = (1000.0 / targetPPI).pow(1.0 / powerFactor)
-        val requiredPace = referencePace * paceRatio
+        // Reverse the PPI calculation to find required time
+        val timeRatio = (targetPPI / 1000.0).pow(1.0 / powerFactor)
+        val requiredTime = referenceTime / timeRatio
         
-        return requiredPace * 60.0 // Convert to seconds per km
+        // Convert to pace (seconds per kilometer)
+        val distanceKm = distance / 1000.0
+        return requiredTime / distanceKm
     }
     
     /**

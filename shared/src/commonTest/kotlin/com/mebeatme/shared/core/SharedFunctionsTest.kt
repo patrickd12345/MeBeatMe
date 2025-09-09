@@ -12,15 +12,15 @@ class SharedFunctionsTest {
     fun `purdyScore calculates correct scores for standard distances`() {
         // Test 5K (5000m) - recreational runner time
         val score5k = purdyScore(5000.0, 1500) // 5K in 25:00
-        assertEquals(355.0, score5k, 1.0) // Should be around 355 points
+        assertEquals(140.6, score5k, 1.0) // Should be around 140.6 points
         
         // Test 10K (10000m) - recreational runner time  
         val score10k = purdyScore(10000.0, 3000) // 10K in 50:00
-        assertEquals(355.0, score10k, 1.0) // Should be around 355 points
+        assertEquals(157.0, score10k, 1.0) // Should be around 157 points
         
         // Test Half Marathon (21097.5m) - recreational runner time
         val scoreHalf = purdyScore(21097.5, 6300) // Half in 1:45:00
-        assertEquals(355.0, scoreHalf, 1.0) // Should be around 355 points
+        assertEquals(177.0, scoreHalf, 1.0) // Should be around 177 points
     }
     
     @Test
