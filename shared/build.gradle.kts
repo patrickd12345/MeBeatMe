@@ -78,10 +78,27 @@ tasks.register("assembleXCFramework") {
     dependsOn("linkDebugFrameworkIosArm64", "linkDebugFrameworkIosX64", "linkDebugFrameworkIosSimulatorArm64")
     
     doLast {
-        println("XCFramework built successfully!")
-        println("Frameworks available at:")
-        println("- iosArm64: shared/build/bin/iosArm64/debugFramework/shared.framework")
-        println("- iosX64: shared/build/bin/iosX64/debugFramework/shared.framework")
-        println("- iosSimulatorArm64: shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework")
+        val xcframeworkDir = file("build/XCFrameworks/debug")
+        xcframeworkDir.mkdirs()
+        
+        val xcframeworkPath = file("build/XCFrameworks/debug/Shared.xcframework")
+        
+        // Remove existing XCFramework if it exists
+        if (xcframeworkPath.exists()) {
+            xcframeworkPath.deleteRecursively()
+        }
+        
+        // Create XCFramework using xcodebuild
+        exec {
+            commandLine(
+                "xcodebuild", "-create-xcframework",
+                "-framework", "build/bin/iosArm64/debugFramework/Shared.framework",
+                "-framework", "build/bin/iosX64/debugFramework/Shared.framework", 
+                "-framework", "build/bin/iosSimulatorArm64/debugFramework/Shared.framework",
+                "-output", xcframeworkPath.absolutePath
+            )
+        }
+        
+        println("XCFramework built successfully at: ${xcframeworkPath.absolutePath}")
     }
 }
