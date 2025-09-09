@@ -1,0 +1,148 @@
+name: MeBeatMe CI Pipeline
+
+on: 
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Linux: Test shared module, Android, and server
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Run shared module tests
+        run: ./gradlew :shared:test
+        
+      - name: Run Android app tests
+        run: ./gradlew :androidApp:test
+        
+      - name: Run server tests
+        run: ./gradlew :server:test
+        
+      - name: Run integration tests
+        run: ./gradlew :shared:test --tests "*Integration*"
+        
+  # macOS: Build XCFramework for iOS/watchOS
+  build-xcframework:
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Build XCFramework
+        run: ./gradlew :shared:assembleXCFramework
+        
+      - name: Upload XCFramework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shared.xcframework
+          path: shared/build/XCFrameworks/**/Shared.xcframework
+          
+      - name: Create XCFramework zip
+        run: |
+          cd shared/build/XCFrameworks
+          zip -r Shared.xcframework.zip Shared.xcframework
+          
+      - name: Upload XCFramework zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shared.xcframework.zip
+          path: shared/build/XCFrameworks/Shared.xcframework.zip
+          
+  # Optional: Build iOS/watchOS (if Xcode project exists)
+  build-ios:
+    runs-on: macos-14
+    needs: build-xcframework
+    if: false # Disabled by default, enable when iOS project is ready
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download XCFramework
+        uses: actions/download-artifact@v4
+        with:
+          name: Shared.xcframework
+          
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+          
+      - name: Build iOS project
+        run: |
+          # Add iOS build commands here when project is ready
+          echo "iOS build not yet implemented"
+          
+  # Cross-platform consistency validation
+  validate-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Run cross-platform consistency tests
+        run: ./gradlew :shared:test --tests "*CrossPlatformConsistency*"
+        
+      - name: Validate DTOs
+        run: ./gradlew :shared:test --tests "*DTO*"
+        
+  # Server deployment test
+  test-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Build server
+        run: ./gradlew :server:build
+        
+      - name: Test server endpoints
+        run: |
+          # Start server in background
+          ./gradlew :server:run &
+          SERVER_PID=$!
+          
+          # Wait for server to start
+          sleep 10
+          
+          # Test health endpoint
+          curl -f http://localhost:8080/health || exit 1
+          
+          # Test sync/runs endpoint
+          curl -f -X POST http://localhost:8080/sync/runs \
+            -H "Content-Type: application/json" \
+            -d '[{"id":"test","source":"test","startedAtEpochMs":1757300000000,"endedAtEpochMs":1757301800000,"distanceMeters":5000.0,"elapsedSeconds":1800,"avgPaceSecPerKm":360.0}]' || exit 1
+          
+          # Test bests endpoint
+          curl -f http://localhost:8080/bests || exit 1
+          
+          # Stop server
+          kill $SERVER_PID

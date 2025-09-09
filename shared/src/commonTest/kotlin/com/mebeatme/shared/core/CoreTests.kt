@@ -12,7 +12,7 @@ class PurdyPointsCalculatorTest {
     @Test
     fun testCalculatePPI_ShortDistance() {
         // Test 1km in 4:00 (240 seconds)
-        val ppi = PurdyPointsCalculator.calculatePPI(1000.0, 240L)
+        val ppi = PurdyCalculator.purdyScore(1000.0, 240)
         assertTrue(ppi > 0, "PPI should be positive")
         assertTrue(ppi < 2000, "PPI should be within reasonable bounds")
     }
@@ -20,7 +20,7 @@ class PurdyPointsCalculatorTest {
     @Test
     fun testCalculatePPI_MediumDistance() {
         // Test 5km in 20:00 (1200 seconds)
-        val ppi = PurdyPointsCalculator.calculatePPI(5000.0, 1200L)
+        val ppi = PurdyCalculator.purdyScore(5000.0, 1200)
         assertTrue(ppi > 0, "PPI should be positive")
         assertTrue(ppi < 2000, "PPI should be within reasonable bounds")
     }
@@ -28,7 +28,7 @@ class PurdyPointsCalculatorTest {
     @Test
     fun testCalculatePPI_LongDistance() {
         // Test 10km in 45:00 (2700 seconds)
-        val ppi = PurdyPointsCalculator.calculatePPI(10000.0, 2700L)
+        val ppi = PurdyCalculator.purdyScore(10000.0, 2700)
         assertTrue(ppi > 0, "PPI should be positive")
         assertTrue(ppi < 2000, "PPI should be within reasonable bounds")
     }
@@ -36,37 +36,14 @@ class PurdyPointsCalculatorTest {
     @Test
     fun testCalculateRequiredPace() {
         val distance = 5000.0 // 5km
-        val targetPPI = 500.0
+        val windowSec = 1200 // 20 minutes
         
-        val requiredPace = PurdyPointsCalculator.calculateRequiredPace(distance, targetPPI)
+        val requiredPace = PurdyCalculator.targetPace(distance, windowSec)
         
         assertTrue(requiredPace > 0, "Required pace should be positive")
         assertTrue(requiredPace < 600, "Required pace should be reasonable") // Less than 10 min/km
     }
     
-    @Test
-    fun testCalculateRequiredTime() {
-        val distance = 5000.0 // 5km
-        val targetPPI = 500.0
-        
-        val requiredTime = PurdyPointsCalculator.calculateRequiredTime(distance, targetPPI)
-        
-        assertTrue(requiredTime > 0, "Required time should be positive")
-        assertTrue(requiredTime < 3600, "Required time should be reasonable") // Less than 1 hour
-    }
-    
-    @Test
-    fun testPaceConsistency() {
-        val distance = 5000.0
-        val targetPPI = 500.0
-        
-        val requiredPace = PurdyPointsCalculator.calculateRequiredPace(distance, targetPPI)
-        val requiredTime = PurdyPointsCalculator.calculateRequiredTime(distance, targetPPI)
-        
-        // Verify that pace * distance = time
-        val calculatedTime = (requiredPace * distance / 1000.0).toLong()
-        assertEquals(requiredTime, calculatedTime, "Pace and time calculations should be consistent")
-    }
 }
 
 class PerformanceBucketManagerTest {

@@ -1,126 +1,58 @@
-import Foundation
-import shared
+// KMPBridge.swift
+// iOS/watchOS bridge to KMP shared module
+// Following the HYBRID PROMPT specifications
+//
+// This file should be added to your iOS/watchOS projects
+// and the Shared.xcframework should be embedded
 
-/// Bridge between Swift and Kotlin Multiplatform Shared module
-/// Provides access to core PPI calculations and shared functions
+import Foundation
+import Shared
+
 enum PerfIndex {
     
-    /// Calculate Purdy score using the cubic relationship: P = 1000 × (T₀/T)³
-    /// - Parameters:
-    ///   - distanceMeters: Distance in meters
-    ///   - durationSec: Duration in seconds
-    /// - Returns: Purdy score (1-1000+ points)
-    /// - Throws: IllegalArgumentException if inputs are invalid
+    /// Calculate Purdy score using shared KMP implementation
+    /// @param distanceMeters Distance in meters
+    /// @param durationSec Duration in seconds
+    /// @return Purdy score (100-2000 range)
+    /// @throws PerfIndexError if inputs are invalid
     static func purdyScore(distanceMeters: Double, durationSec: Int32) throws -> Double {
         do {
-            return try SharedFunctionsKt.purdyScore(distanceMeters: distanceMeters, durationSec: durationSec)
+            return try Shared.purdyScore(distanceMeters: distanceMeters, durationSec: durationSec)
         } catch {
-            throw PerfIndexError.invalidInput(error.localizedDescription)
+            throw PerfIndexError.calculationFailed(error.localizedDescription)
         }
     }
     
-    /// Calculate target pace in seconds per kilometer
-    /// - Parameters:
-    ///   - distanceMeters: Distance in meters
-    ///   - windowSec: Time window in seconds
-    /// - Returns: Target pace in seconds per kilometer
-    /// - Throws: IllegalArgumentException if inputs are invalid
+    /// Calculate target pace using shared KMP implementation
+    /// @param distanceMeters Distance in meters
+    /// @param windowSec Duration window in seconds
+    /// @return Required pace in seconds per kilometer
+    /// @throws PerfIndexError if inputs are invalid
     static func targetPace(distanceMeters: Double, windowSec: Int32) throws -> Double {
         do {
-            return try SharedFunctionsKt.targetPace(distanceMeters: distanceMeters, windowSec: windowSec)
+            return try Shared.targetPace(distanceMeters: distanceMeters, windowSec: windowSec)
         } catch {
-            throw PerfIndexError.invalidInput(error.localizedDescription)
+            throw PerfIndexError.calculationFailed(error.localizedDescription)
         }
     }
     
-    /// Calculate the highest PPI in the last N days from a list of runs
-    /// - Parameters:
-    ///   - runs: List of runs to analyze
-    ///   - nowMs: Current timestamp in milliseconds
-    ///   - days: Number of days to look back (default 90)
-    /// - Returns: Highest PPI in the window, or nil if no runs found
-    static func highestPpiInWindow(runs: [RunDTO], nowMs: Int64, days: Int32 = 90) -> Double? {
-        return SharedFunctionsKt.highestPpiInWindow(runs: runs, nowMs: nowMs, days: days)
-    }
-    
-    /// Calculate best times for standard distances
-    /// - Parameters:
-    ///   - runs: List of runs to analyze
-    ///   - sinceMs: Only consider runs after this timestamp (default 0 = all time)
-    /// - Returns: BestsDTO with best times for 5K, 10K, Half, Full
-    static func calculateBests(runs: [RunDTO], sinceMs: Int64 = 0) -> BestsDTO {
-        return SharedFunctionsKt.calculateBests(runs: runs, sinceMs: sinceMs)
+    /// Calculate highest PPI in 90-day window
+    /// @param runs List of runs to analyze
+    /// @param nowMs Current time in milliseconds
+    /// @param days Number of days to look back (default 90)
+    /// @return Highest PPI in the window, or nil if no runs
+    static func highestPpiInWindow(runs: [RunDto], nowMs: Int64, days: Int32 = 90) -> Double? {
+        return Shared.highestPpiInWindow(runs: runs, nowMs: nowMs, days: days)
     }
 }
 
-/// Errors that can be thrown by PerfIndex functions
-enum PerfIndexError: Error, LocalizedError {
-    case invalidInput(String)
+enum PerfIndexError: Error {
+    case calculationFailed(String)
     
-    var errorDescription: String? {
+    var localizedDescription: String {
         switch self {
-        case .invalidInput(let message):
-            return "Invalid input: \(message)"
+        case .calculationFailed(let message):
+            return "Calculation failed: \(message)"
         }
     }
 }
-
-/// Extension to convert between Swift and Kotlin types
-extension RunDTO {
-    /// Convert Swift RunDTO to Kotlin RunDTO
-    static func fromKotlin(_ kotlinRun: shared.RunDTO) -> RunDTO {
-        return RunDTO(
-            id: kotlinRun.id,
-            source: kotlinRun.source,
-            startedAtEpochMs: kotlinRun.startedAtEpochMs,
-            endedAtEpochMs: kotlinRun.endedAtEpochMs,
-            distanceMeters: kotlinRun.distanceMeters,
-            elapsedSeconds: kotlinRun.elapsedSeconds,
-            avgPaceSecPerKm: kotlinRun.avgPaceSecPerKm,
-            avgHr: kotlinRun.avgHr?.int32Value,
-            ppi: kotlinRun.ppi,
-            notes: kotlinRun.notes
-        )
-    }
-    
-    /// Convert Kotlin RunDTO to Swift RunDTO
-    func toKotlin() -> shared.RunDTO {
-        return shared.RunDTO(
-            id: self.id,
-            source: self.source,
-            startedAtEpochMs: self.startedAtEpochMs,
-            endedAtEpochMs: self.endedAtEpochMs,
-            distanceMeters: self.distanceMeters,
-            elapsedSeconds: self.elapsedSeconds,
-            avgPaceSecPerKm: self.avgPaceSecPerKm,
-            avgHr: self.avgHr.map { KotlinInt(value: $0) },
-            ppi: self.ppi,
-            notes: self.notes
-        )
-    }
-}
-
-extension BestsDTO {
-    /// Convert Swift BestsDTO to Kotlin BestsDTO
-    static func fromKotlin(_ kotlinBests: shared.BestsDTO) -> BestsDTO {
-        return BestsDTO(
-            best5kSec: kotlinBests.best5kSec?.int32Value,
-            best10kSec: kotlinBests.best10kSec?.int32Value,
-            bestHalfSec: kotlinBests.bestHalfSec?.int32Value,
-            bestFullSec: kotlinBests.bestFullSec?.int32Value,
-            highestPPILast90Days: kotlinBests.highestPPILast90Days
-        )
-    }
-    
-    /// Convert Kotlin BestsDTO to Swift BestsDTO
-    func toKotlin() -> shared.BestsDTO {
-        return shared.BestsDTO(
-            best5kSec: self.best5kSec.map { KotlinInt(value: $0) },
-            best10kSec: self.best10kSec.map { KotlinInt(value: $0) },
-            bestHalfSec: self.bestHalfSec.map { KotlinInt(value: $0) },
-            bestFullSec: self.bestFullSec.map { KotlinInt(value: $0) },
-            highestPPILast90Days: self.highestPPILast90Days
-        )
-    }
-}
-

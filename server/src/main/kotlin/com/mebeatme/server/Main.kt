@@ -1,144 +1,132 @@
 package com.mebeatme.server
 
-import com.mebeatme.shared.model.RunDTO
-import com.mebeatme.shared.model.BestsDTO
-import com.mebeatme.shared.core.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.calllogging.*
-import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.http.*
 import kotlinx.serialization.json.Json
-import org.slf4j.event.Level
+import com.mebeatme.shared.api.*
+import com.mebeatme.shared.core.highestPpiInWindow
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
-}
-
-fun Application.module() {
-    install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-        })
-    }
-    
-    install(CORS) {
-        allowMethod(HttpMethod.Get)
-        allowMethod(HttpMethod.Post)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Options)
-        allowHeader(HttpHeaders.ContentType)
-        allowHeader(HttpHeaders.Authorization)
-        allowHeader("X-Requested-With")
-        allowCredentials = true
-        anyHost() // In production, specify actual origins
-    }
-    
-    install(CallLogging) {
-        level = Level.INFO
-    }
-    
-    install(StatusPages) {
-        exception<Throwable> { call, cause ->
-            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to cause.message))
+    embeddedServer(Netty, port = 8080) {
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                ignoreUnknownKeys = true
+            })
         }
-    }
-    
-    routing {
-        // Health check endpoint
-        get("/health") {
-            call.respond(mapOf("status" to "ok", "timestamp" to System.currentTimeMillis()))
+        install(CORS) {
+            anyHost()
+            allowHeader("Content-Type")
+            allowHeader("Authorization")
+            allowMethod(io.ktor.http.HttpMethod.Get)
+            allowMethod(io.ktor.http.HttpMethod.Post)
+            allowMethod(io.ktor.http.HttpMethod.Options)
         }
         
-        // API routes
-        route("/api/v1") {
-            route("/sync") {
-                // POST /sync/runs - Upload runs
-                post("/runs") {
-                    try {
-                        val runs = call.receive<List<RunDTO>>()
-                        
-                        // Calculate PPI for runs that don't have it
-                        val runsWithPpi = runs.map { run ->
-                            if (run.ppi == null) {
-                                run.calculatePpi()
-                            } else {
-                                run
-                            }
+        routing {
+            // Health check
+            get("/health") {
+                call.respond(mapOf("status" to "ok", "version" to "0.2.0"))
+            }
+            
+            // Sync runs endpoint
+            post("/sync/runs") {
+                try {
+                    val runs = call.receive<List<RunDTO>>()
+                    
+                    // Validate runs
+                    runs.forEach { run ->
+                        if (run.id.isBlank()) {
+                            call.respond(400, ErrorResponse("invalid_payload", "Run ID cannot be blank"))
+                            return@post
                         }
-                        
-                        // Store runs (in-memory for now, replace with actual storage)
-                        RunRepository.upsertAll(runsWithPpi)
-                        
-                        call.respond(mapOf(
-                            "status" to "ok",
-                            "stored" to runsWithPpi.size,
-                            "message" to "Runs synchronized successfully"
-                        ))
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf(
-                            "error" to "Invalid request format",
-                            "details" to e.message
-                        ))
+                        if (run.distanceMeters <= 0) {
+                            call.respond(400, ErrorResponse("invalid_payload", "Distance must be positive"))
+                            return@post
+                        }
+                        if (run.elapsedSeconds <= 0) {
+                            call.respond(400, ErrorResponse("invalid_payload", "Elapsed time must be positive"))
+                            return@post
+                        }
                     }
+                    
+                    // Store runs (in-memory for now)
+                    val storedCount = runRepository.upsertAll(runs)
+                    
+                    call.respond(SyncRunsResponse("ok", storedCount))
+                } catch (e: Exception) {
+                    call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
                 }
-                
-                // GET /bests - Get best times and highest PPI
-                get("/bests") {
-                    try {
-                        val since = call.request.queryParameters["since"]?.toLongOrNull() ?: 0L
-                        val runs = RunRepository.listSince(since)
-                        
-                        val bests = calculateBests(runs, since)
-                        
-                        call.respond(bests)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.InternalServerError, mapOf(
-                            "error" to "Failed to calculate bests",
-                            "details" to e.message
-                        ))
-                    }
+            }
+            
+            // Get bests endpoint
+            get("/bests") {
+                try {
+                    val since = call.request.queryParameters["since"]?.toLongOrNull() ?: 0L
+                    val runs = runRepository.listSince(since)
+                    
+                    val bests = BestsDTO(
+                        best5kSec = findBestTime(runs, 5000.0),
+                        best10kSec = findBestTime(runs, 10000.0),
+                        bestHalfSec = findBestTime(runs, 21097.0),
+                        bestFullSec = findBestTime(runs, 42195.0),
+                        highestPPILast90Days = highestPpiInWindow(runs, System.currentTimeMillis())
+                    )
+                    
+                    call.respond(bests)
+                } catch (e: Exception) {
+                    call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
                 }
             }
         }
-    }
+    }.start(wait = true)
 }
 
-/**
- * Simple in-memory repository for runs
- * In production, replace with actual database storage
- */
-object RunRepository {
-    private val runs = mutableListOf<RunDTO>()
+// Simple in-memory repository for demo purposes
+object runRepository {
+    private val runs = ConcurrentHashMap<String, RunDTO>()
+    private val idCounter = AtomicLong(1)
     
-    fun upsertAll(newRuns: List<RunDTO>) {
-        // Remove existing runs with same IDs
-        val idsToUpdate = newRuns.map { it.id }.toSet()
-        runs.removeAll { it.id in idsToUpdate }
-        
-        // Add new runs
-        runs.addAll(newRuns)
+    fun upsertAll(newRuns: List<RunDTO>): Int {
+        var stored = 0
+        newRuns.forEach { run ->
+            val runWithId = if (run.id.isBlank()) {
+                run.copy(id = "run_${idCounter.getAndIncrement()}")
+            } else {
+                run
+            }
+            runs[runWithId.id] = runWithId
+            stored++
+        }
+        return stored
     }
     
     fun listSince(sinceMs: Long): List<RunDTO> {
-        return runs.filter { it.startedAtEpochMs >= sinceMs }
+        return runs.values.filter { it.startedAtEpochMs >= sinceMs }
     }
     
     fun getAll(): List<RunDTO> {
-        return runs.toList()
+        return runs.values.toList()
     }
+}
+
+// Helper function to find best time for a specific distance
+private fun findBestTime(runs: List<RunDTO>, targetDistance: Double): Int? {
+    val tolerance = targetDistance * 0.05 // 5% tolerance
     
-    fun clear() {
-        runs.clear()
-    }
+    return runs
+        .filter { run ->
+            val distanceDiff = kotlin.math.abs(run.distanceMeters - targetDistance)
+            distanceDiff <= tolerance
+        }
+        .minOfOrNull { it.elapsedSeconds }
 }
