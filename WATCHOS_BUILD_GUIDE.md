@@ -14,18 +14,19 @@ Your watchOS project is now properly configured and ready for development! Here'
 
 ### Option 1: Windows Development (Recommended for Daily Work)
 
-**You can now develop Swift code on Windows!**
+**You can develop Swift code on Windows, but cannot run Xcode!**
 
-1. **Open Xcode Project**:
+1. **Open Xcode Project** (macOS only):
    ```bash
-   # On Windows (if you have Xcode installed) or macOS
+   # Xcode is NOT available on Windows - macOS only!
    open watchos/MeBeatMe.xcodeproj
    ```
 
-2. **Develop Swift Code**:
-   - Edit files in `watchos/MeBeatMeWatch/`
+2. **Develop Swift Code** (Windows):
+   - Edit files in `watchos/MeBeatMeWatch/` using any text editor
+   - Use VS Code, IntelliJ IDEA, or any Swift-capable editor
    - The placeholder framework satisfies Swift Package Manager
-   - Compilation will work (though functions won't execute until real framework is used)
+   - You can write and edit Swift code, but cannot compile/run it
 
 3. **Test Your Changes**:
    ```powershell
