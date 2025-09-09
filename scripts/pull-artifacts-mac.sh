@@ -23,7 +23,7 @@ fi
 
 # Get the latest CI run
 echo "📥 Fetching latest CI artifacts..."
-RUN_ID=$(gh run list --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') -w CI -L 1 --json databaseId -q '.[0].databaseId')
+RUN_ID=$(gh run list --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') -w "KMP Artifacts" -L 1 --json databaseId -q '.[0].databaseId')
 
 if [ -z "$RUN_ID" ]; then
     echo "❌ Error: No CI runs found. Make sure you've pushed to trigger CI."
