@@ -92,9 +92,9 @@ tasks.register("assembleXCFramework") {
         exec {
             commandLine(
                 "xcodebuild", "-create-xcframework",
-                "-framework", "build/bin/iosArm64/debugFramework/Shared.framework",
-                "-framework", "build/bin/iosX64/debugFramework/Shared.framework", 
-                "-framework", "build/bin/iosSimulatorArm64/debugFramework/Shared.framework",
+                "-framework", "build/bin/iosArm64/debugFramework/shared.framework",
+                "-framework", "build/bin/iosX64/debugFramework/shared.framework", 
+                "-framework", "build/bin/iosSimulatorArm64/debugFramework/shared.framework",
                 "-output", xcframeworkPath.absolutePath
             )
         }
