@@ -779,6 +779,66 @@
             });
         }
         
+        // Calculate PPI (Personal Performance Index) using Purdy formula
+        function calculatePPI(distanceMeters, timeSeconds) {
+            if (distanceMeters <= 0 || timeSeconds <= 0) {
+                return 100; // Minimum score
+            }
+            
+            // Get baseline time for this distance
+            const baselineTime = getBaselineTime(distanceMeters);
+            
+            // Calculate performance ratio (actual time / baseline time)
+            const performanceRatio = timeSeconds / baselineTime;
+            
+            // Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
+            const rawScore = 1000.0 * Math.pow(performanceRatio, -2.0);
+            
+            // Clamp to reasonable range (100-2000)
+            return Math.max(100, Math.min(2000, rawScore));
+        }
+        
+        // Get baseline time for a given distance using interpolation
+        function getBaselineTime(distanceMeters) {
+            // Elite baseline times (in seconds) - realistic values
+            const baselines = [
+                { distance: 1500, time: 210 },    // 3:30 (realistic elite)
+                { distance: 5000, time: 755 },    // 12:35 (realistic elite) 
+                { distance: 10000, time: 1571 },  // 26:11 (realistic elite)
+                { distance: 21097, time: 3540 },  // 59:00 (half marathon)
+                { distance: 42195, time: 7460 }   // 2:04:20 (marathon)
+            ];
+            
+            // Find closest baseline or interpolate
+            if (distanceMeters <= baselines[0].distance) {
+                return baselines[0].time;
+            }
+            if (distanceMeters >= baselines[baselines.length - 1].distance) {
+                return baselines[baselines.length - 1].time;
+            }
+            
+            // Linear interpolation in log-log space
+            for (let i = 0; i < baselines.length - 1; i++) {
+                const current = baselines[i];
+                const next = baselines[i + 1];
+                
+                if (distanceMeters >= current.distance && distanceMeters <= next.distance) {
+                    const logDist1 = Math.log(current.distance);
+                    const logDist2 = Math.log(next.distance);
+                    const logTime1 = Math.log(current.time);
+                    const logTime2 = Math.log(next.time);
+                    const logDistTarget = Math.log(distanceMeters);
+                    
+                    const ratio = (logDistTarget - logDist1) / (logDist2 - logDist1);
+                    const logTimeTarget = logTime1 + ratio * (logTime2 - logTime1);
+                    
+                    return Math.exp(logTimeTarget);
+                }
+            }
+            
+            return baselines[baselines.length - 1].time;
+        }
+        
         // Format seconds to hh:mm:ss
         function formatTimeFromSeconds(totalSeconds) {
             const hours = Math.floor(totalSeconds / 3600);
