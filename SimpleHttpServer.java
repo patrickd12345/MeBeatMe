@@ -49,6 +49,14 @@ public class SimpleHttpServer {
                         sendJsonResponse(writer, bests);
                     } else if (path.startsWith("/sync/upload")) {
                         sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Session uploaded successfully\"}");
+                    } else if (path.startsWith("/sync/runs")) {
+                        // Handle manual workout submissions
+                        if (method.equals("POST")) {
+                            // For now, just return success - in a real implementation this would store the run
+                            sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Run added successfully\"}");
+                        } else {
+                            sendJsonResponse(writer, "{\"status\":\"success\",\"runs\":[]}");
+                        }
                     } else if (path.startsWith("/sync/sessions")) {
                         // Your actual 5.94km run: 41:38 = 2498 seconds
                         double distanceMeters = 5940.0;
