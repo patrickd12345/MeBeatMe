@@ -3,6 +3,9 @@ import java.net.*;
 import java.util.*;
 
 public class SimpleHttpServer {
+    // Store workout data in memory
+    private static final List<WorkoutData> workouts = new ArrayList<>();
+    private static double currentBestPPI = 131.5; // Current best PPI
     public static void main(String[] args) {
         try {
             ServerSocket server = new ServerSocket(8080);
@@ -35,27 +38,74 @@ public class SimpleHttpServer {
                     if (path.startsWith("/health")) {
                         sendJsonResponse(writer, "{\"status\":\"ok\",\"version\":\"0.2.0\"}");
                     } else if (path.startsWith("/sync/bests")) {
-                        // Your actual 5.94km run: 41:38 = 2498 seconds, pace = 7:01/km
-                        // Calculate PPI using the correct Purdy formula
-                        double distanceMeters = 5940.0;
-                        double timeSeconds = 2498.0;
-                        
-                        // CORRECTED Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
-                        // Use interpolation between elite baselines for accurate calculation
-                        double baselineTime = getInterpolatedBaselineTime(distanceMeters);
-                        double actualPpi = 1000.0 * Math.pow(timeSeconds / baselineTime, -2.0);
-                        
-                        String bests = "{\"status\":\"success\",\"bests\":{\"KM_3_8\":" + String.format("%.1f", actualPpi) + "},\"lastUpdated\":" + System.currentTimeMillis() + "}";
+                        // Return the current best PPI (updated when new workouts are added)
+                        String bests = "{\"status\":\"success\",\"bests\":{\"KM_3_8\":" + String.format("%.1f", currentBestPPI) + "},\"lastUpdated\":" + System.currentTimeMillis() + "}";
                         sendJsonResponse(writer, bests);
                     } else if (path.startsWith("/sync/upload")) {
                         sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Session uploaded successfully\"}");
                     } else if (path.startsWith("/sync/runs")) {
                         // Handle manual workout submissions
                         if (method.equals("POST")) {
-                            // For now, just return success - in a real implementation this would store the run
-                            sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Run added successfully\"}");
+                            // Read the request body
+                            StringBuilder body = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null && !line.isEmpty()) {
+                                body.append(line);
+                            }
+                            
+                            // Parse and store the workout data
+                            try {
+                                // Simple JSON parsing for workout data
+                                String jsonBody = body.toString();
+                                if (jsonBody.contains("distanceMeters") && jsonBody.contains("elapsedSeconds")) {
+                                    // Extract values from JSON (simple parsing)
+                                    double distance = extractDouble(jsonBody, "distanceMeters");
+                                    double time = extractDouble(jsonBody, "elapsedSeconds");
+                                    
+                                    // Calculate PPI
+                                    double baselineTime = getInterpolatedBaselineTime(distance);
+                                    double ppi = 1000.0 * Math.pow(time / baselineTime, -2.0);
+                                    ppi = Math.max(100, Math.min(2000, ppi)); // Clamp to reasonable range
+                                    
+                                    // Store workout
+                                    WorkoutData workout = new WorkoutData(
+                                        "manual_" + System.currentTimeMillis(),
+                                        distance,
+                                        (int)time,
+                                        ppi,
+                                        System.currentTimeMillis()
+                                    );
+                                    workouts.add(workout);
+                                    
+                                    // Update best PPI if this is better
+                                    if (ppi > currentBestPPI) {
+                                        currentBestPPI = ppi;
+                                    }
+                                    
+                                    System.out.println("Stored workout: " + distance + "m in " + time + "s, PPI: " + String.format("%.1f", ppi));
+                                }
+                                
+                                sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Run added successfully\"}");
+                            } catch (Exception e) {
+                                System.err.println("Error parsing workout data: " + e.getMessage());
+                                sendJsonResponse(writer, "{\"status\":\"error\",\"message\":\"Failed to parse workout data\"}");
+                            }
                         } else {
-                            sendJsonResponse(writer, "{\"status\":\"success\",\"runs\":[]}");
+                            // Return stored workouts
+                            StringBuilder runsJson = new StringBuilder("{\"status\":\"success\",\"runs\":[");
+                            for (int i = 0; i < workouts.size(); i++) {
+                                WorkoutData workout = workouts.get(i);
+                                runsJson.append("{");
+                                runsJson.append("\"id\":\"").append(workout.id).append("\",");
+                                runsJson.append("\"distanceMeters\":").append(workout.distanceMeters).append(",");
+                                runsJson.append("\"elapsedSeconds\":").append(workout.elapsedSeconds).append(",");
+                                runsJson.append("\"ppi\":").append(String.format("%.1f", workout.ppi)).append(",");
+                                runsJson.append("\"timestamp\":").append(workout.timestamp);
+                                runsJson.append("}");
+                                if (i < workouts.size() - 1) runsJson.append(",");
+                            }
+                            runsJson.append("]}");
+                            sendJsonResponse(writer, runsJson.toString());
                         }
                     } else if (path.startsWith("/sync/sessions")) {
                         // Your actual 5.94km run: 41:38 = 2498 seconds
@@ -143,5 +193,37 @@ public class SimpleHttpServer {
         }
         
         return baselines[baselines.length - 1][1];
+    }
+    
+    // Helper method to extract double values from JSON
+    private static double extractDouble(String json, String key) {
+        try {
+            int startIndex = json.indexOf("\"" + key + "\":") + key.length() + 3;
+            int endIndex = json.indexOf(",", startIndex);
+            if (endIndex == -1) endIndex = json.indexOf("}", startIndex);
+            if (endIndex == -1) endIndex = json.indexOf("]", startIndex);
+            String value = json.substring(startIndex, endIndex).trim();
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            System.err.println("Error extracting " + key + " from JSON: " + e.getMessage());
+            return 0.0;
+        }
+    }
+    
+    // Simple data class for workout storage
+    static class WorkoutData {
+        final String id;
+        final double distanceMeters;
+        final int elapsedSeconds;
+        final double ppi;
+        final long timestamp;
+        
+        WorkoutData(String id, double distanceMeters, int elapsedSeconds, double ppi, long timestamp) {
+            this.id = id;
+            this.distanceMeters = distanceMeters;
+            this.elapsedSeconds = elapsedSeconds;
+            this.ppi = ppi;
+            this.timestamp = timestamp;
+        }
     }
 }
