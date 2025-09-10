@@ -57,10 +57,27 @@ public class SimpleHttpServer {
                             try {
                                 // Simple JSON parsing for workout data
                                 String jsonBody = body.toString();
-                                if (jsonBody.contains("distanceMeters") && jsonBody.contains("elapsedSeconds")) {
+                                System.out.println("Received JSON: " + jsonBody);
+                                
+                                // Handle both single object and array format
+                                String workoutJson = jsonBody;
+                                if (jsonBody.startsWith("[") && jsonBody.endsWith("]")) {
+                                    // Extract the first object from the array
+                                    int start = jsonBody.indexOf("{");
+                                    int end = jsonBody.lastIndexOf("}");
+                                    if (start != -1 && end != -1) {
+                                        workoutJson = jsonBody.substring(start, end + 1);
+                                        System.out.println("Extracted workout JSON: " + workoutJson);
+                                    }
+                                }
+                                
+                                if (workoutJson.contains("distanceMeters") && workoutJson.contains("elapsedSeconds")) {
                                     // Extract values from JSON (simple parsing)
-                                    double distance = extractDouble(jsonBody, "distanceMeters");
-                                    double time = extractDouble(jsonBody, "elapsedSeconds");
+                                    double distance = extractDouble(workoutJson, "distanceMeters");
+                                    double time = extractDouble(workoutJson, "elapsedSeconds");
+                                    long timestamp = extractLong(workoutJson, "startedAtEpochMs");
+                                    
+                                    System.out.println("Parsed: distance=" + distance + ", time=" + time + ", timestamp=" + timestamp);
                                     
                                     // Calculate PPI
                                     double baselineTime = getInterpolatedBaselineTime(distance);
@@ -73,16 +90,19 @@ public class SimpleHttpServer {
                                         distance,
                                         (int)time,
                                         ppi,
-                                        System.currentTimeMillis()
+                                        timestamp
                                     );
                                     workouts.add(workout);
                                     
                                     // Update best PPI if this is better
                                     if (ppi > currentBestPPI) {
                                         currentBestPPI = ppi;
+                                        System.out.println("New best PPI: " + String.format("%.1f", ppi));
                                     }
                                     
-                                    System.out.println("Stored workout: " + distance + "m in " + time + "s, PPI: " + String.format("%.1f", ppi));
+                                    System.out.println("Stored workout: " + distance + "m in " + time + "s, PPI: " + String.format("%.1f", ppi) + ", Date: " + new java.util.Date(timestamp));
+                                } else {
+                                    System.out.println("JSON does not contain required fields");
                                 }
                                 
                                 sendJsonResponse(writer, "{\"status\":\"success\",\"message\":\"Run added successfully\"}");
@@ -108,16 +128,37 @@ public class SimpleHttpServer {
                             sendJsonResponse(writer, runsJson.toString());
                         }
                     } else if (path.startsWith("/sync/sessions")) {
-                        // Your actual 5.94km run: 41:38 = 2498 seconds
-                        double distanceMeters = 5940.0;
-                        double timeSeconds = 2498.0;
+                        // Return stored workouts as sessions
+                        StringBuilder sessionsJson = new StringBuilder("{\"status\":\"success\",\"sessions\":[");
                         
-                        // CORRECTED Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
-                        double baselineTime = getInterpolatedBaselineTime(distanceMeters);
-                        double actualPpi = 1000.0 * Math.pow(timeSeconds / baselineTime, -2.0);
+                        // Add the original hardcoded run first (for backward compatibility)
+                        sessionsJson.append("{");
+                        sessionsJson.append("\"id\":\"your_5_9k_run\",");
+                        sessionsJson.append("\"filename\":\"your_run_5.9km.fit\",");
+                        sessionsJson.append("\"distance\":5940.0,");
+                        sessionsJson.append("\"duration\":2498,");
+                        sessionsJson.append("\"ppi\":131.5,");
+                        sessionsJson.append("\"bucket\":\"KM_3_8\",");
+                        sessionsJson.append("\"createdAt\":1757520000000"); // Fixed date instead of current time
+                        sessionsJson.append("}");
                         
-                        String sessions = "{\"status\":\"success\",\"sessions\":[{\"id\":\"your_5_9k_run\",\"filename\":\"your_run_5.9km.fit\",\"distance\":" + distanceMeters + ",\"duration\":" + timeSeconds + ",\"ppi\":" + String.format("%.1f", actualPpi) + ",\"bucket\":\"KM_3_8\",\"createdAt\":" + System.currentTimeMillis() + "}],\"count\":1}";
-                        sendJsonResponse(writer, sessions);
+                        // Add stored manual workouts
+                        for (int i = 0; i < workouts.size(); i++) {
+                            WorkoutData workout = workouts.get(i);
+                            sessionsJson.append(",");
+                            sessionsJson.append("{");
+                            sessionsJson.append("\"id\":\"").append(workout.id).append("\",");
+                            sessionsJson.append("\"filename\":\"manual_workout\",");
+                            sessionsJson.append("\"distance\":").append(workout.distanceMeters).append(",");
+                            sessionsJson.append("\"duration\":").append(workout.elapsedSeconds).append(",");
+                            sessionsJson.append("\"ppi\":").append(String.format("%.1f", workout.ppi)).append(",");
+                            sessionsJson.append("\"bucket\":\"KM_3_8\",");
+                            sessionsJson.append("\"createdAt\":").append(workout.timestamp);
+                            sessionsJson.append("}");
+                        }
+                        
+                        sessionsJson.append("],\"count\":").append(workouts.size() + 1).append("}");
+                        sendJsonResponse(writer, sessionsJson.toString());
                     } else {
                         send404Response(writer);
                     }
@@ -207,6 +248,21 @@ public class SimpleHttpServer {
         } catch (Exception e) {
             System.err.println("Error extracting " + key + " from JSON: " + e.getMessage());
             return 0.0;
+        }
+    }
+    
+    // Helper method to extract long values from JSON
+    private static long extractLong(String json, String key) {
+        try {
+            int startIndex = json.indexOf("\"" + key + "\":") + key.length() + 3;
+            int endIndex = json.indexOf(",", startIndex);
+            if (endIndex == -1) endIndex = json.indexOf("}", startIndex);
+            if (endIndex == -1) endIndex = json.indexOf("]", startIndex);
+            String value = json.substring(startIndex, endIndex).trim();
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            System.err.println("Error extracting " + key + " from JSON: " + e.getMessage());
+            return System.currentTimeMillis(); // Default to current time if parsing fails
         }
     }
     
