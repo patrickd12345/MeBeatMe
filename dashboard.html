@@ -146,6 +146,151 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
         }
+        .manual-btn {
+            display: inline-block;
+            background: #ea580c;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 12px;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        .manual-btn:hover {
+            background: #c2410c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(234, 88, 12, 0.3);
+        }
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .close:hover {
+            opacity: 0.7;
+        }
+        .modal-body {
+            padding: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-help {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.875em;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        .cancel-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .cancel-btn:hover {
+            background: #4b5563;
+        }
+        .submit-btn {
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background: #c2410c;
+        }
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -216,6 +361,7 @@
         
         <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
         <a href="fit-upload.html" class="upload-link">📁 Upload FIT File</a>
+        <button class="manual-btn" onclick="showManualInput()">✏️ Manual Workout</button>
         
         <div id="error" class="error" style="display: none;"></div>
         
@@ -272,6 +418,41 @@
                     <li><strong>KM_15_25:</strong> 15-25 kilometers</li>
                     <li><strong>KM_25P:</strong> 25+ kilometers</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Workout Modal -->
+    <div id="manualModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Add Manual Workout</h2>
+                <span class="close" onclick="closeManualInput()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="manualWorkoutForm">
+                    <div class="form-group">
+                        <label for="workoutDate">📅 Date:</label>
+                        <input type="date" id="workoutDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workoutDistance">📏 Distance (meters):</label>
+                        <input type="number" id="workoutDistance" min="100" max="100000" step="100" required placeholder="e.g., 5000 for 5km">
+                    </div>
+                    <div class="form-group">
+                        <label for="workoutTime">⏱️ Time (hh:mm:ss):</label>
+                        <input type="text" id="workoutTime" required placeholder="e.g., 0:25:30 for 25 minutes 30 seconds" pattern="^\d{1,2}:\d{2}:\d{2}$">
+                        <small class="form-help">Format: hours:minutes:seconds (e.g., 0:25:30, 1:45:15)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="workoutNotes">📝 Notes (optional):</label>
+                        <textarea id="workoutNotes" placeholder="Any additional notes about your workout..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="closeManualInput()" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Add Workout</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -596,6 +777,207 @@
                 list.appendChild(item);
             });
         }
+        
+        // Format seconds to hh:mm:ss
+        function formatTimeFromSeconds(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Parse hh:mm:ss format to seconds
+        function parseTimeToSeconds(timeString) {
+            // Validate format
+            const timeRegex = /^(\d{1,2}):(\d{2}):(\d{2})$/;
+            const match = timeString.match(timeRegex);
+            
+            if (!match) {
+                throw new Error('Invalid time format. Please use hh:mm:ss (e.g., 0:25:30)');
+            }
+            
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const seconds = parseInt(match[3], 10);
+            
+            // Validate ranges
+            if (minutes >= 60) {
+                throw new Error('Minutes must be less than 60');
+            }
+            if (seconds >= 60) {
+                throw new Error('Seconds must be less than 60');
+            }
+            if (hours > 24) {
+                throw new Error('Hours must be less than 24');
+            }
+            
+            // Convert to total seconds
+            return (hours * 3600) + (minutes * 60) + seconds;
+        }
+        
+        // Manual Workout Functions
+        function showManualInput() {
+            const modal = document.getElementById('manualModal');
+            modal.style.display = 'block';
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('workoutDate').value = today;
+            
+            // Focus on distance input
+            document.getElementById('workoutDistance').focus();
+        }
+        
+        function closeManualInput() {
+            const modal = document.getElementById('manualModal');
+            modal.style.display = 'none';
+            
+            // Reset form
+            document.getElementById('manualWorkoutForm').reset();
+        }
+        
+        // Handle form submission
+        document.getElementById('manualWorkoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('workoutDate').value;
+            const distance = parseFloat(document.getElementById('workoutDistance').value);
+            const timeInput = document.getElementById('workoutTime').value;
+            const notes = document.getElementById('workoutNotes').value;
+            
+            try {
+                // Parse hh:mm:ss format and convert to seconds
+                const timeSeconds = parseTimeToSeconds(timeInput);
+                
+                // Calculate PPI
+                const ppi = calculatePPI(distance, timeSeconds);
+                
+                // Create workout data
+                const workoutData = {
+                    id: `manual_${Date.now()}`,
+                    source: "Manual",
+                    startedAtEpochMs: new Date(date).getTime(),
+                    endedAtEpochMs: new Date(date).getTime() + (timeSeconds * 1000),
+                    distanceMeters: distance,
+                    elapsedSeconds: timeSeconds,
+                    avgPaceSecPerKm: (timeSeconds / (distance / 1000)),
+                    ppi: ppi,
+                    notes: notes || null
+                };
+                
+                // Show loading state
+                const submitBtn = document.querySelector('.submit-btn');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Adding...';
+                submitBtn.disabled = true;
+                
+                // Send to server
+                const response = await fetch('http://localhost:8080/sync/runs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([workoutData])
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Success! Close modal and refresh data
+                    closeManualInput();
+                    loadData();
+                    
+                    // Show success message
+                    showNotification(`✅ Workout added! PPI: ${ppi.toFixed(1)}`, 'success');
+                } else {
+                    throw new Error(result.error || 'Failed to add workout');
+                }
+                
+            } catch (error) {
+                console.error('Error adding workout:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                // Reset button
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('manualModal');
+            if (event.target === modal) {
+                closeManualInput();
+            }
+        });
+        
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                animation: slideInRight 0.3s ease-out;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            `;
+            
+            if (type === 'success') {
+                notification.style.backgroundColor = '#10b981';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#ef4444';
+            } else {
+                notification.style.backgroundColor = '#3b82f6';
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add CSS for notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
         
         // Load data on page load
         loadData();
