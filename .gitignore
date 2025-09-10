@@ -83,7 +83,7 @@ FitFileServer*.class
 SimpleServer.class
 SimpleServer.kt
 
-# Data files
+# Data filesy
 mebeatme_*.txt
 upload_*.fit
 
