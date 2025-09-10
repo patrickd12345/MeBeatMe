@@ -3,6 +3,31 @@ package com.mebeatme.shared.model
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
+// Unified DTOs for cross-platform integration
+@Serializable
+data class RunDTO(
+    val id: String,
+    val source: String,                // "GPX"|"TCX"|"FIT"|"Manual"
+    val startedAtEpochMs: Long,
+    val endedAtEpochMs: Long,
+    val distanceMeters: Double,
+    val elapsedSeconds: Int,
+    val avgPaceSecPerKm: Double,
+    val avgHr: Int? = null,
+    val ppi: Double? = null,
+    val notes: String? = null
+)
+
+@Serializable
+data class BestsDTO(
+    val best5kSec: Int? = null,
+    val best10kSec: Int? = null,
+    val bestHalfSec: Int? = null,
+    val bestFullSec: Int? = null,
+    val highestPPILast90Days: Double? = null
+)
+
+// Legacy models for backward compatibility
 @Serializable
 data class RunSession(
     val id: String,

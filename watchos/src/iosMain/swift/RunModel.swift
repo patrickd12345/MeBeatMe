@@ -41,4 +41,5 @@ struct Bests: Codable {
     var fastest5k: Double?
     var fastest10k: Double?
     var bestPurdy: Double?
+    var highestPPILast90Days: Double?
 }

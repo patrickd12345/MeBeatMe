@@ -12,6 +12,12 @@ struct HealthAuthorization {
 
     /// Requests read and write access for workout metrics.
     func requestAuthorization() async throws {
+        // Check if HealthKit is available
+        guard HKHealthStore.isHealthDataAvailable() else {
+            print("HealthKit is not available on this device")
+            return
+        }
+        
         let typesToShare: Set<HKSampleType> = [
             HKObjectType.workoutType(),
             HKQuantityType.quantityType(forIdentifier: .heartRate)!,
@@ -19,7 +25,14 @@ struct HealthAuthorization {
         ]
 
         let typesToRead: Set<HKObjectType> = typesToShare
-        try await healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead)
+        
+        do {
+            try await healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead)
+        } catch {
+            print("HealthKit authorization failed: \(error)")
+            // For now, we'll continue without HealthKit rather than crashing
+            // In a real app, you'd want to handle this more gracefully
+        }
     }
     #else
     /// Fallback for platforms without HealthKit.

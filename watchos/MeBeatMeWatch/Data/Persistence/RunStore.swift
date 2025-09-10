@@ -5,6 +5,7 @@ import os
 class RunStore {
     private let logger = Logger(subsystem: "com.mebeatme.watch", category: "RunStore")
     private let fileManager = FileManager.default
+    private let kmpBridge = KMPBridge()
     
     private var documentsDirectory: URL {
         fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -87,7 +88,7 @@ class RunStore {
         // Update distance-based bests
         bests.updateBestTime(for: run.distance, time: run.duration)
         
-        // Calculate 90-day highest PPI
+        // Calculate 90-day highest PPI using KMP bridge
         let runs90Days = runsInLast90Days()
         let highestPPI = calculateHighestPPI(in: runs90Days)
         bests.highestPPILast90Days = highestPPI
@@ -108,29 +109,39 @@ class RunStore {
         }
     }
     
-    /// Calculates the highest PPI from the given runs
+    /// Calculates the highest PPI from the given runs using KMP bridge
     private func calculateHighestPPI(in runs: [RunRecord]) -> Double? {
         guard !runs.isEmpty else { return nil }
         
-        // This would normally call the KMP bridge to calculate PPI
-        // For now, we'll use a simple calculation
         var highestPPI: Double = 0
         
         for run in runs {
-            // Simple PPI calculation (this should use KMP bridge in production)
-            let ppi = calculateSimplePPI(distance: run.distance, duration: run.duration)
+            // Use KMP bridge to calculate PPI
+            let ppi = kmpBridge.calculatePPI(distance: run.distance, duration: run.duration)
             highestPPI = max(highestPPI, ppi)
         }
         
         return highestPPI
     }
     
-    /// Simple PPI calculation (placeholder - should use KMP bridge)
-    private func calculateSimplePPI(distance: Double, duration: Int) -> Double {
-        // This is a placeholder calculation
-        // In production, this should call the KMP bridge
-        let velocity = distance / Double(duration)
-        return velocity * 100 // Simple multiplier
+    /// Gets the highest PPI from the last 90 days
+    func getHighestPPILast90Days() -> Double? {
+        let runs90Days = runsInLast90Days()
+        return calculateHighestPPI(in: runs90Days)
+    }
+    
+    /// Gets recent runs (last 10)
+    func getRecentRuns(limit: Int = 10) -> [RunRecord] {
+        let allRuns = loadRuns()
+        return Array(allRuns.sorted { $0.date > $1.date }.prefix(limit))
+    }
+    
+    /// Gets runs for a specific date range
+    func getRuns(from startDate: Date, to endDate: Date) -> [RunRecord] {
+        let allRuns = loadRuns()
+        return allRuns.filter { run in
+            run.date >= startDate && run.date <= endDate
+        }
     }
     
     /// Clears all stored data (for testing)

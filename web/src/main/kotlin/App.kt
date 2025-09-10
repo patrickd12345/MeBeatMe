@@ -12,11 +12,17 @@ fun main() {
     
     scope.launch {
         try {
-            // Fetch data from server
-            val bestsResponse = window.fetch("http://localhost:8080/sync/bests").await()
+            // Fetch data from server - use subdomain in production
+            val baseUrl = if (window.location.hostname.contains("ready2race.me")) {
+                "https://mebeatme.ready2race.me"
+            } else {
+                "http://localhost:8080"
+            }
+            
+            val bestsResponse = window.fetch("$baseUrl/api/v1/sync/bests").await()
             val bestsData = bestsResponse.json().await()
             
-            val sessionsResponse = window.fetch("http://localhost:8080/sync/sessions").await()
+            val sessionsResponse = window.fetch("$baseUrl/api/v1/sync/sessions").await()
             val sessionsData = sessionsResponse.json().await()
             
             // Display dashboard

@@ -2,6 +2,10 @@
 
 A production-grade watchOS app with Purdy-based Personal Performance Index (PPI) system, designed for Windows-first development with macOS CI.
 
+![KMP Artifacts](https://github.com/patrickd12345/MeBeatMe/actions/workflows/kmp-artifacts.yml/badge.svg)
+
+> **📋 State of the Union**: See [STATE_OF_THE_UNION.md](STATE_OF_THE_UNION.md) for current project status and next steps.
+
 ## 🏗️ Architecture
 
 Clean Kotlin Multiplatform monorepo with Windows-first development workflow:

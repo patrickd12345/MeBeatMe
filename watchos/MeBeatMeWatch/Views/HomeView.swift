@@ -3,6 +3,8 @@ import SwiftUI
 /// Main home view showing dashboard with runs and bests
 struct HomeView: View {
     @Environment(HomeViewModel.self) private var viewModel
+    @State private var isRunning = false
+    @State private var runSessionViewModel: RunSessionViewModel?
     
     var body: some View {
         NavigationStack {
@@ -20,8 +22,10 @@ struct HomeView: View {
                     // Recent runs section
                     recentRunsSection
                     
-                    // Import button
-                    importButton
+                    // Start Run button
+                    NavigationLink(destination: runActiveView, isActive: $isRunning) {
+                        startRunButton
+                    }
                 }
                 .padding()
             }
@@ -44,7 +48,7 @@ struct HomeView: View {
             Text("🏃‍♂️")
                 .font(.system(size: 40))
             
-            Text("Post-Run Analysis")
+            Text("Run Analysis")
                 .font(.headline)
                 .foregroundColor(.secondary)
         }
@@ -72,7 +76,7 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
     
@@ -82,19 +86,18 @@ struct HomeView: View {
                 .font(.headline)
             
             VStack(spacing: 8) {
-                bestRow(title: "5K", time: viewModel.bests.best5kSec)
-                bestRow(title: "10K", time: viewModel.bests.best10kSec)
-                bestRow(title: "Half Marathon", time: viewModel.bests.bestHalfSec)
-                bestRow(title: "Marathon", time: viewModel.bests.bestFullSec)
+                bestRow(title: "5K", time: viewModel.bests.fastest5k)
+                bestRow(title: "10K", time: viewModel.bests.fastest10k)
+                bestPPIRow(title: "Best PPI", ppi: viewModel.bests.bestPurdy)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
     
-    private func bestRow(title: String, time: Int?) -> some View {
+    private func bestRow(title: String, time: Double?) -> some View {
         HStack {
             Text(title)
                 .font(.subheadline)
@@ -102,11 +105,30 @@ struct HomeView: View {
             Spacer()
             
             if let time = time {
-                Text(viewModel.formatDuration(time))
+                Text(viewModel.formatDuration(Int(time)))
                     .font(.subheadline)
                     .fontWeight(.medium)
             } else {
                 Text("--:--")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    private func bestPPIRow(title: String, ppi: Double?) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+            
+            Spacer()
+            
+            if let ppi = ppi {
+                Text(String(format: "%.0f", ppi))
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            } else {
+                Text("--")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -124,7 +146,7 @@ struct HomeView: View {
                     .foregroundColor(.secondary)
             } else {
                 ForEach(viewModel.recentRuns) { run in
-                    NavigationLink(destination: RunDetailView(run: run)) {
+                    NavigationLink(destination: Text("Run Details")) {
                         runRow(run)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -133,7 +155,7 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
     
@@ -164,17 +186,47 @@ struct HomeView: View {
         .padding(.vertical, 4)
     }
     
-    private var importButton: some View {
-        NavigationLink(destination: ImportView()) {
+    private var startRunButton: some View {
+        Button(action: {
+            startRun()
+        }) {
             HStack {
-                Image(systemName: "square.and.arrow.down")
-                Text("Import Race")
+                Image(systemName: "play.circle.fill")
+                Text("Start Run")
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.blue)
+            .background(Color.green)
             .foregroundColor(.white)
             .cornerRadius(12)
+        }
+    }
+    
+    @ViewBuilder
+    private var runActiveView: some View {
+        if let runSessionViewModel = runSessionViewModel {
+            RunActiveView(viewModel: runSessionViewModel)
+                .navigationTitle("Running")
+                .navigationBarTitleDisplayMode(.inline)
+        } else {
+            Text("Starting run...")
+                .navigationTitle("Running")
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    
+    private func startRun() {
+        print("🏃 HomeView.startRun() called")
+        runSessionViewModel = RunSessionViewModel()
+        
+        Task {
+            print("🏃 Starting run task...")
+            // Start with a 5K target (5000m) and 30-minute window
+            await runSessionViewModel?.startRun(targetDistance: 5000, windowSec: 1800)
+            print("🏃 Run started successfully, setting isRunning = true")
+            await MainActor.run {
+                isRunning = true
+            }
         }
     }
 }

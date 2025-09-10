@@ -21,38 +21,26 @@ if ! gh auth status &> /dev/null; then
     exit 1
 fi
 
-# Get repository info
-REPO=$(gh repo view --json owner,name -q '.owner.login + "/" + .name')
-echo "📦 Repository: $REPO"
-
-# Get the latest CI run
+# Get the latest successful CI run
 echo "📥 Fetching latest CI artifacts..."
-RUN_ID=$(gh run list --repo $REPO -w CI -L 1 --json databaseId -q '.[0].databaseId')
+RUN_ID=$(gh run list --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') -w "KMP Artifacts" --json databaseId,conclusion --jq '.[]|select(.conclusion=="success")|.databaseId' | head -n1)
 
 if [ -z "$RUN_ID" ]; then
-    echo "❌ Error: No CI runs found. Make sure you've pushed to trigger CI."
+    echo "❌ Error: No successful CI runs found. Make sure you've pushed to trigger CI."
+    echo "💡 Try: gh run list --workflow 'KMP Artifacts' to see recent runs"
     exit 1
 fi
 
-echo "📦 Downloading Shared.xcframework from run $RUN_ID..."
+echo "📦 Downloading Shared.xcframework from successful run $RUN_ID..."
 
 # Create frameworks directory if it doesn't exist
 mkdir -p watchos/Frameworks
 
 # Download the XCFramework artifact
-if gh run download $RUN_ID --repo $REPO --name Shared.xcframework -D watchos/Frameworks; then
+gh run download $RUN_ID --repo $(gh repo view --json owner,name -q '.owner.login + "/" + .name') --name Shared.xcframework -D watchos/Frameworks
+
+if [ $? -eq 0 ]; then
     echo "✅ Successfully downloaded Shared.xcframework!"
-    
-    # Verify the framework structure
-    if [ -d "watchos/Frameworks/Shared.xcframework" ]; then
-        echo "🔍 Verifying XCFramework structure..."
-        if [ -f "watchos/Frameworks/Shared.xcframework/Info.plist" ]; then
-            echo "✅ XCFramework structure verified!"
-        else
-            echo "⚠️  Warning: XCFramework may be incomplete"
-        fi
-    fi
-    
     echo ""
     echo "🎯 Next steps:"
     echo "1. Open Xcode project: xed watchos/MeBeatMe.xcodeproj"
@@ -64,14 +52,7 @@ if gh run download $RUN_ID --repo $REPO --name Shared.xcframework -D watchos/Fra
     echo "1. Set up your Apple Developer account in Xcode"
     echo "2. Configure signing & provisioning"
     echo "3. Select your Apple Watch as the destination"
-    echo ""
-    echo "🔧 Development workflow:"
-    echo "1. Make changes on Windows"
-    echo "2. Push to trigger CI"
-    echo "3. Run this script to get updated framework"
-    echo "4. Test on macOS"
 else
     echo "❌ Failed to download artifacts"
-    echo "💡 Try running: gh run list --repo $REPO to see available runs"
     exit 1
 fi

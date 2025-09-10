@@ -7,4 +7,4 @@ pluginManagement {
 }
 
 rootProject.name = "MeBeatMe"
-include(":core", ":platform:wearos", ":platform:watchos", ":web", ":server", ":shared", ":androidApp", ":wearApp")
+include(":core", ":shared", ":platform:wearos", ":platform:watchos", ":web", ":server", ":androidApp", ":wearApp")

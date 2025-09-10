@@ -1,72 +1,75 @@
 import Foundation
 
-/// Represents the result of analyzing a run
-struct AnalyzedRun: Identifiable, Equatable {
+/// Represents an analyzed run with PPI score and recommendations
+struct AnalyzedRun: Codable, Identifiable, Equatable {
     let id: UUID
-    let runRecord: RunRecord
+    let run: RunRecord
     let ppi: Double
-    let purdyScore: Double
-    let recommendation: Recommendation
+    let recommendations: [Recommendation]
+    let metrics: PerformanceMetrics
+    let analyzedAt: Date
     
     init(
         id: UUID = UUID(),
-        runRecord: RunRecord,
+        run: RunRecord,
         ppi: Double,
-        purdyScore: Double,
-        recommendation: Recommendation
+        recommendations: [Recommendation] = [],
+        metrics: PerformanceMetrics,
+        analyzedAt: Date = Date()
     ) {
         self.id = id
-        self.runRecord = runRecord
+        self.run = run
         self.ppi = ppi
-        self.purdyScore = purdyScore
-        self.recommendation = recommendation
+        self.recommendations = recommendations
+        self.metrics = metrics
+        self.analyzedAt = analyzedAt
     }
-}
-
-/// Represents a training recommendation based on the run analysis
-struct Recommendation: Equatable {
-    let targetPace: Double // seconds per kilometer
-    let projectedGain: Double // expected PPI improvement
-    let description: String
-    let difficulty: Difficulty
     
-    enum Difficulty: String, CaseIterable {
-        case easy = "Easy"
-        case moderate = "Moderate"
-        case hard = "Hard"
-        case extreme = "Extreme"
-        
-        var color: String {
-            switch self {
-            case .easy: return "green"
-            case .moderate: return "blue"
-            case .hard: return "orange"
-            case .extreme: return "red"
-            }
+    /// Formatted PPI score
+    var formattedPPI: String {
+        return String(format: "%.1f", ppi)
+    }
+    
+    /// Performance level based on PPI score
+    var performanceLevel: PerformanceLevel {
+        switch ppi {
+        case 0..<200:
+            return .beginner
+        case 200..<350:
+            return .intermediate
+        case 350..<500:
+            return .advanced
+        default:
+            return .elite
         }
     }
-}
-
-/// Central error handling for the app
-enum AppError: LocalizedError, Equatable {
-    case unsupportedFormat(String)
-    case parseFailed(String)
-    case ioFailure(String)
-    case kmpBridgeFailure(String)
-    case analysisFailure(String)
     
-    var errorDescription: String? {
-        switch self {
-        case .unsupportedFormat(let format):
-            return "Unsupported file format: \(format)"
-        case .parseFailed(let reason):
-            return "Failed to parse file: \(reason)"
-        case .ioFailure(let reason):
-            return "I/O error: \(reason)"
-        case .kmpBridgeFailure(let reason):
-            return "KMP bridge error: \(reason)"
-        case .analysisFailure(let reason):
-            return "Analysis error: \(reason)"
+    /// Performance level color
+    var performanceLevelColor: String {
+        switch performanceLevel {
+        case .beginner:
+            return "blue"
+        case .intermediate:
+            return "green"
+        case .advanced:
+            return "orange"
+        case .elite:
+            return "red"
         }
+    }
+    
+    /// High priority recommendations
+    var highPriorityRecommendations: [Recommendation] {
+        return recommendations.filter { $0.priority == .high }
+    }
+    
+    /// Medium priority recommendations
+    var mediumPriorityRecommendations: [Recommendation] {
+        return recommendations.filter { $0.priority == .medium }
+    }
+    
+    /// Low priority recommendations
+    var lowPriorityRecommendations: [Recommendation] {
+        return recommendations.filter { $0.priority == .low }
     }
 }
