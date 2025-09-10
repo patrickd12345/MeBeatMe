@@ -87,6 +87,26 @@ fun main() {
                     call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
                 }
             }
+            
+            // Sync bests endpoint (for dashboard compatibility)
+            get("/sync/bests") {
+                try {
+                    val since = call.request.queryParameters["since"]?.toLongOrNull() ?: 0L
+                    val runs = runRepository.listSince(since)
+                    
+                    val bests = BestsDTO(
+                        best5kSec = findBestTime(runs, 5000.0),
+                        best10kSec = findBestTime(runs, 10000.0),
+                        bestHalfSec = findBestTime(runs, 21097.0),
+                        bestFullSec = findBestTime(runs, 42195.0),
+                        highestPPILast90Days = highestPpiInWindow(runs, System.currentTimeMillis())
+                    )
+                    
+                    call.respond(bests)
+                } catch (e: Exception) {
+                    call.respond(500, ErrorResponse("internal_error", "Internal server error: ${e.message}"))
+                }
+            }
         }
     }.start(wait = true)
 }
