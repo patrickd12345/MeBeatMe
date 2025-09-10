@@ -14,7 +14,17 @@ struct RunActiveView: View {
             Text("Δ " + formatPace(viewModel.paceDelta))
                 .foregroundColor(viewModel.paceDelta <= 0 ? .green : .red)
             Text("\(Int(viewModel.liveHeartRate)) bpm")
-            Button("Stop") { viewModel.stopRun() }
+            
+            // Debug info
+            Text("Debug: elapsed=\(viewModel.elapsed)")
+                .font(.caption)
+                .foregroundColor(.gray)
+            
+            Button("Stop") { 
+                Task {
+                    await viewModel.stopRun()
+                }
+            }
                 .tint(.red)
         }
     }

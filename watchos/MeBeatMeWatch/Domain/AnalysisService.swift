@@ -4,7 +4,6 @@ import os
 /// Service for analyzing runs and generating performance recommendations
 class AnalysisService {
     private let logger = Logger(subsystem: "com.mebeatme.watch", category: "AnalysisService")
-    private let kmpBridge = KMPBridge()
     
     /// Analyzes a run and generates recommendations
     /// - Parameter run: The run to analyze
@@ -13,7 +12,7 @@ class AnalysisService {
         logger.info("Analyzing run: \(run.fileName)")
         
         // Calculate PPI using KMP bridge
-        let ppi = kmpBridge.calculatePPI(distance: run.distance, duration: run.duration)
+        let ppi = KMPBridge.purdyScore(distanceMeters: run.distance, durationSec: Int(run.duration))
         
         // Generate recommendations based on performance
         let recommendations = generateRecommendations(for: run, ppi: ppi)
@@ -135,7 +134,7 @@ class AnalysisService {
     }
     
     /// Gets distance category for a given distance
-    private func getDistanceCategory(_ distanceKm: Double) -> DistanceCategory {
+    private func getDistanceCategory(_ distanceKm: Double) -> PerformanceMetrics.DistanceCategory {
         switch distanceKm {
         case 0..<3:
             return .short
@@ -149,7 +148,7 @@ class AnalysisService {
     }
     
     /// Gets pace category for a given pace
-    private func getPaceCategory(_ paceMinutes: Double) -> PaceCategory {
+    private func getPaceCategory(_ paceMinutes: Double) -> PerformanceMetrics.PaceCategory {
         switch paceMinutes {
         case 0..<4:
             return .elite
@@ -191,14 +190,14 @@ struct RunAnalysis {
 }
 
 /// Represents a performance recommendation
-struct Recommendation: Identifiable {
+struct Recommendation: Identifiable, Codable, Equatable {
     let id = UUID()
     let type: RecommendationType
     let title: String
     let description: String
     let priority: RecommendationPriority
     
-    enum RecommendationType {
+    enum RecommendationType: String, CaseIterable, Codable {
         case distance
         case pace
         case performance
@@ -206,7 +205,7 @@ struct Recommendation: Identifiable {
         case recovery
     }
     
-    enum RecommendationPriority {
+    enum RecommendationPriority: String, CaseIterable, Codable {
         case low
         case medium
         case high
@@ -214,31 +213,136 @@ struct Recommendation: Identifiable {
 }
 
 /// Represents performance metrics for a run
-struct PerformanceMetrics {
+struct PerformanceMetrics: Codable, Equatable {
     let efficiency: Double
     let consistency: Double
     let distanceCategory: DistanceCategory
     let paceCategory: PaceCategory
+    let heartRateZone: HeartRateZone?
     
-    enum DistanceCategory {
-        case short
-        case medium
-        case long
-        case ultra
+    init(
+        efficiency: Double,
+        consistency: Double,
+        distanceCategory: DistanceCategory,
+        paceCategory: PaceCategory,
+        heartRateZone: HeartRateZone? = nil
+    ) {
+        self.efficiency = efficiency
+        self.consistency = consistency
+        self.distanceCategory = distanceCategory
+        self.paceCategory = paceCategory
+        self.heartRateZone = heartRateZone
     }
     
-    enum PaceCategory {
-        case beginner
-        case intermediate
-        case advanced
-        case elite
+    enum DistanceCategory: String, Codable, CaseIterable {
+        case short = "Short"
+        case medium = "Medium"
+        case long = "Long"
+        case ultra = "Ultra"
+        
+        var description: String {
+            switch self {
+            case .short:
+                return "1-3km"
+            case .medium:
+                return "3-8km"
+            case .long:
+                return "8-15km"
+            case .ultra:
+                return "15km+"
+            }
+        }
+    }
+    
+    enum PaceCategory: String, Codable, CaseIterable {
+        case beginner = "Beginner"
+        case intermediate = "Intermediate"
+        case advanced = "Advanced"
+        case elite = "Elite"
+        
+        var description: String {
+            switch self {
+            case .beginner:
+                return "6:00+/km"
+            case .intermediate:
+                return "5:00-6:00/km"
+            case .advanced:
+                return "4:00-5:00/km"
+            case .elite:
+                return "<4:00/km"
+            }
+        }
+    }
+    
+    enum HeartRateZone: String, Codable, CaseIterable {
+        case zone1 = "Zone 1"
+        case zone2 = "Zone 2"
+        case zone3 = "Zone 3"
+        case zone4 = "Zone 4"
+        case zone5 = "Zone 5"
+        
+        var description: String {
+            switch self {
+            case .zone1:
+                return "Recovery"
+            case .zone2:
+                return "Aerobic Base"
+            case .zone3:
+                return "Aerobic Threshold"
+            case .zone4:
+                return "Lactate Threshold"
+            case .zone5:
+                return "Neuromuscular Power"
+            }
+        }
+        
+        var color: String {
+            switch self {
+            case .zone1:
+                return "blue"
+            case .zone2:
+                return "green"
+            case .zone3:
+                return "yellow"
+            case .zone4:
+                return "orange"
+            case .zone5:
+                return "red"
+            }
+        }
     }
 }
 
 /// Performance level based on PPI score
-enum PerformanceLevel: String, CaseIterable {
+enum PerformanceLevel: String, CaseIterable, Codable {
     case beginner = "Beginner"
     case intermediate = "Intermediate"
     case advanced = "Advanced"
     case elite = "Elite"
+    
+    var description: String {
+        switch self {
+        case .beginner:
+            return "Building base fitness"
+        case .intermediate:
+            return "Developing consistency"
+        case .advanced:
+            return "Competitive performance"
+        case .elite:
+            return "World-class performance"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .beginner:
+            return "figure.walk"
+        case .intermediate:
+            return "figure.run"
+        case .advanced:
+            return "figure.run.circle"
+        case .elite:
+            return "crown.fill"
+        }
+    }
 }

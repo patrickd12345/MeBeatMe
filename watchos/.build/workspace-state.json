@@ -1,0 +1,24 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : "xcframework",
+        "packageRef" : {
+          "identity" : "watchos",
+          "kind" : "root",
+          "location" : "/Users/patrickduchesneau/Projects/MeBeatMe/watchos",
+          "name" : "watchos"
+        },
+        "path" : "/Users/patrickduchesneau/Projects/MeBeatMe/watchos/Frameworks/Shared.xcframework",
+        "source" : {
+          "type" : "local"
+        },
+        "targetName" : "SharedKit"
+      }
+    ],
+    "dependencies" : [
+
+    ]
+  },
+  "version" : 6
+}

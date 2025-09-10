@@ -13,9 +13,10 @@ let package = Package(
         )
     ],
     targets: [
-        .binaryTarget(
+        .target(
             name: "SharedKit",
-            path: "Frameworks/Shared.xcframework"
+            dependencies: [],
+            path: "src/iosMain/swift"
         )
     ]
 )

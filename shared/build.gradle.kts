@@ -27,6 +27,17 @@ kotlin {
             isStatic = true
         }
     }
+    
+    // Add watchOS targets (modern architectures only)
+    listOf(
+        watchosArm64(),
+        watchosSimulatorArm64()
+    ).forEach { target ->
+        target.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -56,6 +67,18 @@ kotlin {
         val iosTest by creating {
             dependsOn(commonTest)
         }
+        
+        // Add watchOS source sets (modern architectures only)
+        val watchosArm64Main by getting
+        val watchosSimulatorArm64Main by getting
+        val watchosMain by creating {
+            dependsOn(commonMain)
+            watchosArm64Main.dependsOn(this)
+            watchosSimulatorArm64Main.dependsOn(this)
+        }
+        val watchosTest by creating {
+            dependsOn(commonTest)
+        }
     }
 }
 
@@ -75,7 +98,12 @@ android {
 tasks.register("assembleXCFramework") {
     group = "build"
     description = "Build XCFramework for iOS/watchOS"
-    dependsOn("linkDebugFrameworkIosArm64", "linkDebugFrameworkIosX64", "linkDebugFrameworkIosSimulatorArm64")
+    dependsOn(
+        "linkDebugFrameworkIosArm64", 
+        "linkDebugFrameworkIosSimulatorArm64",
+        "linkDebugFrameworkWatchosArm64",
+        "linkDebugFrameworkWatchosSimulatorArm64"
+    )
     
     doLast {
         val xcframeworkDir = file("build/XCFrameworks/debug")
@@ -88,13 +116,15 @@ tasks.register("assembleXCFramework") {
             xcframeworkPath.deleteRecursively()
         }
         
-        // Create XCFramework using xcodebuild
+        // Create XCFramework using xcodebuild with iOS and watchOS frameworks
+        // Note: Using only modern architectures to avoid conflicts
         exec {
             commandLine(
                 "xcodebuild", "-create-xcframework",
                 "-framework", "build/bin/iosArm64/debugFramework/shared.framework",
-                "-framework", "build/bin/iosX64/debugFramework/shared.framework", 
                 "-framework", "build/bin/iosSimulatorArm64/debugFramework/shared.framework",
+                "-framework", "build/bin/watchosArm64/debugFramework/shared.framework",
+                "-framework", "build/bin/watchosSimulatorArm64/debugFramework/shared.framework",
                 "-output", xcframeworkPath.absolutePath
             )
         }

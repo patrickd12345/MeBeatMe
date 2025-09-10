@@ -1,14 +1,412 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project
-   version = "1.0"
-   xmlns = "http://www.apple.com/developer/xcode/1.0">
-   <name>MeBeatMe</name>
-   <path>MeBeatMe.xcodeproj</path>
-   <source-control>
-      <repository>
-         <name>MeBeatMe</name>
-         <path>MeBeatMe.xcodeproj</path>
-         <source-control-type>git</source-control-type>
-      </repository>
-   </source-control>
-</project>
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000000000000000000001 /* MeBeatMeWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002 /* MeBeatMeWatchApp.swift */; };
+		A1000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000004 /* ContentView.swift */; };
+		A1000000000000000000005 /* WorkoutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000006 /* WorkoutService.swift */; };
+		A1000000000000000000007 /* RunSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000008 /* RunSessionViewModel.swift */; };
+		A1000000000000000000009 /* RunActiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A /* RunActiveView.swift */; };
+		A100000000000000000000B /* KMPBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C /* KMPBridge.swift */; };
+		A100000000000000000000D /* RunStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E /* RunStore.swift */; };
+		A100000000000000000000F /* HealthAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000010 /* HealthAuthorization.swift */; };
+		A1000000000000000000011 /* RunModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000012 /* RunModel.swift */; };
+		A1000000000000000000023 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000024 /* HomeView.swift */; };
+		A1000000000000000000025 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000026 /* HomeViewModel.swift */; };
+		A1000000000000000000027 /* RunRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000028 /* RunRecord.swift */; };
+		A1000000000000000000029 /* AnalyzedRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000002A /* AnalyzedRun.swift */; };
+		A100000000000000000002F /* AnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000030 /* AnalysisService.swift */; };
+		A1000000000000000000031 /* Units.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000032 /* Units.swift */; };
+		A1000000000000000000033 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000034 /* Logging.swift */; };
+		A1000000000000000000035 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000036 /* ErrorHandling.swift */; };
+		A1000000000000000000037 /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000038 /* Files.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000000000000000000013 /* MeBeatMeWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeBeatMeWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000000000000000002 /* MeBeatMeWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeBeatMeWatchApp.swift; sourceTree = "<group>"; };
+		A1000000000000000000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000000000000000000006 /* WorkoutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutService.swift; sourceTree = "<group>"; };
+		A1000000000000000000008 /* RunSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSessionViewModel.swift; sourceTree = "<group>"; };
+		A100000000000000000000A /* RunActiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunActiveView.swift; sourceTree = "<group>"; };
+		A100000000000000000000C /* KMPBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KMPBridge.swift; sourceTree = "<group>"; };
+		A100000000000000000000E /* RunStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunStore.swift; sourceTree = "<group>"; };
+		A1000000000000000000010 /* HealthAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAuthorization.swift; sourceTree = "<group>"; };
+		A1000000000000000000012 /* RunModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunModel.swift; sourceTree = "<group>"; };
+		A1000000000000000000024 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/HomeView.swift; sourceTree = "<group>"; };
+		A1000000000000000000026 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/HomeViewModel.swift; sourceTree = "<group>"; };
+		A1000000000000000000028 /* RunRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/RunRecord.swift; sourceTree = "<group>"; };
+		A100000000000000000002A /* AnalyzedRun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/AnalyzedRun.swift; sourceTree = "<group>"; };
+		A1000000000000000000030 /* AnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/AnalysisService.swift; sourceTree = "<group>"; };
+		A1000000000000000000032 /* Units.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Units.swift; sourceTree = "<group>"; };
+		A1000000000000000000034 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Logging.swift; sourceTree = "<group>"; };
+		A1000000000000000000036 /* ErrorHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/ErrorHandling.swift; sourceTree = "<group>"; };
+		A1000000000000000000038 /* Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Files.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1000000000000000000014 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1000000000000000000015 = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000016 /* MeBeatMeWatch */,
+				A1000000000000000000017 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1000000000000000000016 /* MeBeatMeWatch */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000002 /* MeBeatMeWatchApp.swift */,
+				A1000000000000000000004 /* ContentView.swift */,
+				A1000000000000000000024 /* HomeView.swift */,
+				A1000000000000000000026 /* HomeViewModel.swift */,
+				A1000000000000000000028 /* RunRecord.swift */,
+				A100000000000000000002A /* AnalyzedRun.swift */,
+				A1000000000000000000030 /* AnalysisService.swift */,
+				A1000000000000000000032 /* Units.swift */,
+				A1000000000000000000034 /* Logging.swift */,
+				A1000000000000000000036 /* ErrorHandling.swift */,
+				A1000000000000000000038 /* Files.swift */,
+				A1000000000000000000018 /* Sources */,
+			);
+			path = MeBeatMeWatch;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000017 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000013 /* MeBeatMeWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000018 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000006 /* WorkoutService.swift */,
+				A1000000000000000000008 /* RunSessionViewModel.swift */,
+				A100000000000000000000A /* RunActiveView.swift */,
+				A100000000000000000000C /* KMPBridge.swift */,
+				A100000000000000000000E /* RunStore.swift */,
+				A1000000000000000000010 /* HealthAuthorization.swift */,
+				A1000000000000000000012 /* RunModel.swift */,
+			);
+			path = "../src/iosMain/swift";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000000000000000000019 /* MeBeatMeWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000000000000000001A /* Build configuration list for PBXNativeTarget "MeBeatMeWatch" */;
+			buildPhases = (
+				A100000000000000000001B /* Sources */,
+				A1000000000000000000014 /* Frameworks */,
+				A100000000000000000001C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeBeatMeWatch;
+			productName = MeBeatMeWatch;
+			productReference = A1000000000000000000013 /* MeBeatMeWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A100000000000000000001D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A1000000000000000000019 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A100000000000000000001E /* Build configuration list for PBXProject "MeBeatMe" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1000000000000000000015;
+			productRefGroup = A1000000000000000000017 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000000000000000000019 /* MeBeatMeWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A100000000000000000001C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A100000000000000000001B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000000000000000000001 /* MeBeatMeWatchApp.swift in Sources */,
+				A1000000000000000000003 /* ContentView.swift in Sources */,
+				A1000000000000000000005 /* WorkoutService.swift in Sources */,
+				A1000000000000000000007 /* RunSessionViewModel.swift in Sources */,
+				A1000000000000000000009 /* RunActiveView.swift in Sources */,
+				A100000000000000000000B /* KMPBridge.swift in Sources */,
+				A100000000000000000000D /* RunStore.swift in Sources */,
+				A100000000000000000000F /* HealthAuthorization.swift in Sources */,
+				A1000000000000000000011 /* RunModel.swift in Sources */,
+				A1000000000000000000023 /* HomeView.swift in Sources */,
+				A1000000000000000000025 /* HomeViewModel.swift in Sources */,
+				A1000000000000000000027 /* RunRecord.swift in Sources */,
+				A1000000000000000000029 /* AnalyzedRun.swift in Sources */,
+				A100000000000000000002F /* AnalysisService.swift in Sources */,
+				A1000000000000000000031 /* Units.swift in Sources */,
+				A1000000000000000000033 /* Logging.swift in Sources */,
+				A1000000000000000000035 /* ErrorHandling.swift in Sources */,
+				A1000000000000000000037 /* Files.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A100000000000000000001F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = watchsimulator;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		A1000000000000000000020 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = watchsimulator;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		A1000000000000000000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MeBeatMe;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MeBeatMe needs access to your health data to track your running workouts and analyze your performance.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MeBeatMe needs to save your running workouts to your health data for tracking and analysis.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "MeBeatMe uses motion data to track your running workouts and provide accurate performance metrics.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mebeatme.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		A1000000000000000000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MeBeatMe;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MeBeatMe needs access to your health data to track your running workouts and analyze your performance.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MeBeatMe needs to save your running workouts to your health data for tracking and analysis.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "MeBeatMe uses motion data to track your running workouts and provide accurate performance metrics.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mebeatme.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A100000000000000000001A /* Build configuration list for PBXNativeTarget "MeBeatMeWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000021 /* Debug */,
+				A1000000000000000000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000000000000000001E /* Build configuration list for PBXProject "MeBeatMe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000000000000000001F /* Debug */,
+				A1000000000000000000020 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A100000000000000000001D /* Project object */;
+}

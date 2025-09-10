@@ -27,11 +27,28 @@ class HomeViewModel {
         
         Task {
             do {
-                let loadedRuns = runStore.loadRuns()
-                let loadedBests = runStore.loadBests()
+                let loadedRuns = runStore.list()
+                let loadedBests = runStore.bests()
+                
+                // Convert Run to RunRecord
+                let convertedRuns = loadedRuns.map { run in
+                    RunRecord(
+                        id: run.id,
+                        date: run.startedAt,
+                        distance: run.distanceM,
+                        duration: run.elapsedSec,
+                        averagePace: run.avgPaceSecPerKm,
+                        splits: nil,
+                        source: run.source,
+                        fileName: "\(run.id).\(run.source)",
+                        heartRateData: nil,
+                        elevationGain: nil,
+                        temperature: nil
+                    )
+                }
                 
                 await MainActor.run {
-                    self.runs = loadedRuns.sorted { $0.date > $1.date }
+                    self.runs = convertedRuns.sorted { $0.date > $1.date }
                     self.bests = loadedBests
                     self.isLoading = false
                     self.lastRefreshDate = Date()

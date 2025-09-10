@@ -142,7 +142,7 @@ struct AppLogger {
 }
 
 /// Performance measurement utility
-struct PerformanceTimer {
+class PerformanceTimer {
     private let startTime: CFAbsoluteTime
     private let operation: String
     private let category: String

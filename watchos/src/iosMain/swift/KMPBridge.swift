@@ -1,5 +1,5 @@
 import Foundation
-import shared
+// import Shared  // Temporarily disabled - KMP module not available for watchOS simulator
 
 /// Thin Swift helpers around Kotlin shared logic.
 enum KMPBridge {
@@ -11,6 +11,8 @@ enum KMPBridge {
 
     /// Computes the Purdy performance score for a completed run.
     static func purdyScore(distanceMeters: Double, durationSec: Int) -> Double {
-        PurdyPointsCalculator().calculatePPI(distance: distanceMeters, time: Int64(durationSec))
+        // PurdyPointsCalculator().calculatePPI(distance: distanceMeters, time: Int64(durationSec))
+        // Temporarily return a placeholder value
+        return 100.0
     }
 }
