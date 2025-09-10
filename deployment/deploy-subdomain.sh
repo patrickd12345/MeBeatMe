@@ -5,13 +5,13 @@
 set -e
 
 # Configuration
-DOMAIN="ready2race.me"
+DOMAIN="ready2race.run"
 SUBDOMAIN="mebeatme"
 FULL_DOMAIN="${SUBDOMAIN}.${DOMAIN}"
 APP_DIR="/var/www/mebeatme"
 SERVER_DIR="/opt/mebeatme"
-NGINX_CONFIG="/etc/nginx/sites-available/mebeatme.ready2race.me"
-NGINX_ENABLED="/etc/nginx/sites-enabled/mebeatme.ready2race.me"
+NGINX_CONFIG="/etc/nginx/sites-available/mebeatme.ready2race.run"
+NGINX_ENABLED="/etc/nginx/sites-enabled/mebeatme.ready2race.run"
 SERVICE_NAME="mebeatme-server"
 
 echo "🚀 Deploying MeBeatMe to ${FULL_DOMAIN}..."
