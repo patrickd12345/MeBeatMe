@@ -436,8 +436,9 @@
                         <input type="date" id="workoutDate" required>
                     </div>
                     <div class="form-group">
-                        <label for="workoutDistance">📏 Distance (meters):</label>
-                        <input type="number" id="workoutDistance" min="100" max="100000" step="100" required placeholder="e.g., 5000 for 5km">
+                        <label for="workoutDistance">📏 Distance (km):</label>
+                        <input type="number" id="workoutDistance" min="0.1" max="100" step="0.1" required placeholder="e.g., 5.3 for 5.3 kilometers">
+                        <small class="form-help">Enter distance in kilometers (e.g., 5.3, 10.0, 21.1)</small>
                     </div>
                     <div class="form-group">
                         <label for="workoutTime">⏱️ Time (hh:mm:ss):</label>
@@ -842,16 +843,19 @@
             e.preventDefault();
             
             const date = document.getElementById('workoutDate').value;
-            const distance = parseFloat(document.getElementById('workoutDistance').value);
+            const distanceKm = parseFloat(document.getElementById('workoutDistance').value);
             const timeInput = document.getElementById('workoutTime').value;
             const notes = document.getElementById('workoutNotes').value;
             
             try {
+                // Convert distance from km to meters
+                const distanceMeters = distanceKm * 1000;
+                
                 // Parse hh:mm:ss format and convert to seconds
                 const timeSeconds = parseTimeToSeconds(timeInput);
                 
                 // Calculate PPI
-                const ppi = calculatePPI(distance, timeSeconds);
+                const ppi = calculatePPI(distanceMeters, timeSeconds);
                 
                 // Create workout data
                 const workoutData = {
@@ -859,9 +863,9 @@
                     source: "Manual",
                     startedAtEpochMs: new Date(date).getTime(),
                     endedAtEpochMs: new Date(date).getTime() + (timeSeconds * 1000),
-                    distanceMeters: distance,
+                    distanceMeters: distanceMeters,
                     elapsedSeconds: timeSeconds,
-                    avgPaceSecPerKm: (timeSeconds / (distance / 1000)),
+                    avgPaceSecPerKm: (timeSeconds / distanceKm),
                     ppi: ppi,
                     notes: notes || null
                 };
