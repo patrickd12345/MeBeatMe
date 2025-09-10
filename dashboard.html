@@ -80,6 +80,7 @@
             border-radius: 10px;
             border-left: 4px solid #007bff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
         }
         .session-header {
             display: flex;
@@ -98,6 +99,31 @@
             gap: 10px;
             font-size: 0.9em;
             opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .session-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        .delete-btn:active {
+            background: #bd2130;
         }
         .loading {
             text-align: center;
@@ -164,6 +190,117 @@
             background: #c2410c;
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(234, 88, 12, 0.3);
+        }
+        .strava-btn {
+            display: inline-block;
+            background: #fc4c02;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 12px;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        .strava-btn:hover {
+            background: #e03e00;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(252, 76, 2, 0.3);
+        }
+        
+        /* Strava Modal Styles */
+        .strava-info {
+            margin-bottom: 24px;
+        }
+        .strava-info h3 {
+            color: #fc4c02;
+            margin-bottom: 12px;
+        }
+        .strava-info p {
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .strava-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .feature-item {
+            background: #f9fafb;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        .strava-auth-btn {
+            background: #fc4c02;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .strava-auth-btn:hover {
+            background: #e03e00;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(252, 76, 2, 0.3);
+        }
+        .import-controls {
+            margin-bottom: 24px;
+        }
+        .import-controls h3 {
+            color: #111827;
+            margin-bottom: 16px;
+        }
+        .import-progress {
+            text-align: center;
+        }
+        .import-progress h3 {
+            color: #111827;
+            margin-bottom: 16px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #fc4c02;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .imported-list {
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .imported-item {
+            padding: 4px 0;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        .imported-item.success {
+            color: #059669;
+        }
+        .imported-item.error {
+            color: #dc2626;
         }
         /* Modal Styles */
         .modal {
@@ -362,6 +499,7 @@
         <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
         <a href="fit-upload.html" class="upload-link">📁 Upload FIT File</a>
         <button class="manual-btn" onclick="showManualInput()">✏️ Manual Workout</button>
+        <button class="strava-btn" onclick="showStravaImport()">🏃‍♂️ Import from Strava</button>
         
         <div id="error" class="error" style="display: none;"></div>
         
@@ -454,6 +592,86 @@
                         <button type="submit" class="submit-btn">Add Workout</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strava Import Modal -->
+    <div id="stravaModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏃‍♂️ Import from Strava</h2>
+                <span class="close" onclick="closeStravaImport()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="stravaAuthSection">
+                    <div class="strava-info">
+                        <h3>Connect to Strava</h3>
+                        <p>Import your running activities from Strava and automatically calculate PPI scores.</p>
+                        <div class="strava-features">
+                            <div class="feature-item">✅ Automatic PPI calculation</div>
+                            <div class="feature-item">✅ Import recent activities</div>
+                            <div class="feature-item">✅ Filter by activity type</div>
+                            <div class="feature-item">✅ Preserve original dates</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="closeStravaImport()" class="cancel-btn">Cancel</button>
+                        <button type="button" onclick="authenticateWithStrava()" class="strava-auth-btn">
+                            🏃‍♂️ Connect to Strava
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="stravaImportSection" style="display: none;">
+                    <div class="import-controls">
+                        <h3>Import Activities</h3>
+                        <div class="form-group">
+                            <label for="activityCount">📊 Number of activities to import:</label>
+                            <select id="activityCount">
+                                <option value="10">Last 10 activities</option>
+                                <option value="25">Last 25 activities</option>
+                                <option value="50">Last 50 activities</option>
+                                <option value="100">Last 100 activities</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="activityType">🏃‍♂️ Activity type:</label>
+                            <select id="activityType">
+                                <option value="Run">Running only</option>
+                                <option value="TrailRun">Trail running</option>
+                                <option value="Treadmill">Treadmill</option>
+                                <option value="all">All running activities</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateRange">📅 Date range:</label>
+                            <select id="dateRange">
+                                <option value="7">Last 7 days</option>
+                                <option value="30">Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="goBackToAuth()" class="cancel-btn">← Back</button>
+                        <button type="button" onclick="importStravaActivities()" class="submit-btn">
+                            📥 Import Activities
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="stravaProgressSection" style="display: none;">
+                    <div class="import-progress">
+                        <h3>Importing Activities...</h3>
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        <div id="progressText" class="progress-text">Preparing import...</div>
+                        <div id="importedActivities" class="imported-list"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -774,9 +992,44 @@
                         <div><strong>Bucket:</strong> ${session.bucket}</div>
                         <div><strong>Date:</strong> ${date.toLocaleDateString()}</div>
                     </div>
+                    <div class="session-actions">
+                        <button class="delete-btn" onclick="deleteWorkout('${session.id}')" title="Delete workout">
+                            🗑️ Delete
+                        </button>
+                    </div>
                 `;
                 list.appendChild(item);
             });
+        }
+        
+        // Delete workout function
+        async function deleteWorkout(workoutId) {
+            if (!confirm('Are you sure you want to delete this workout? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:8080/sync/runs/${workoutId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Success! Refresh the data
+                    loadData();
+                    showNotification('✅ Workout deleted successfully', 'success');
+                } else {
+                    throw new Error(result.error || 'Failed to delete workout');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting workout:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            }
         }
         
         // Calculate PPI (Personal Performance Index) using Purdy formula
@@ -1045,6 +1298,174 @@
         
         // Load data on page load
         loadData();
+        
+        // Strava Integration Functions
+        let stravaAccessToken = null;
+        let stravaRefreshToken = null;
+        
+        function showStravaImport() {
+            const modal = document.getElementById('stravaModal');
+            modal.style.display = 'block';
+            
+            // Reset to auth section
+            document.getElementById('stravaAuthSection').style.display = 'block';
+            document.getElementById('stravaImportSection').style.display = 'none';
+            document.getElementById('stravaProgressSection').style.display = 'none';
+        }
+        
+        function closeStravaImport() {
+            const modal = document.getElementById('stravaModal');
+            modal.style.display = 'none';
+        }
+        
+        function authenticateWithStrava() {
+            // Strava OAuth configuration
+            const clientId = 'YOUR_STRAVA_CLIENT_ID'; // You'll need to get this from Strava
+            const redirectUri = encodeURIComponent(window.location.origin + '/dashboard.html');
+            const scope = 'read,activity:read';
+            
+            // Build Strava OAuth URL
+            const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&approval_prompt=force`;
+            
+            // Open Strava OAuth in popup window
+            const popup = window.open(stravaAuthUrl, 'stravaAuth', 'width=600,height=600,scrollbars=yes,resizable=yes');
+            
+            // Listen for the popup to close and handle the result
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    // Check if we have the authorization code in URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const code = urlParams.get('code');
+                    
+                    if (code) {
+                        // Exchange code for access token
+                        exchangeCodeForToken(code);
+                    } else {
+                        showNotification('❌ Strava authentication was cancelled', 'error');
+                    }
+                }
+            }, 1000);
+        }
+        
+        async function exchangeCodeForToken(code) {
+            try {
+                showNotification('🔄 Exchanging authorization code for access token...', 'info');
+                
+                const response = await fetch('http://localhost:8080/strava/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    stravaAccessToken = result.access_token;
+                    stravaRefreshToken = result.refresh_token;
+                    
+                    // Move to import section
+                    document.getElementById('stravaAuthSection').style.display = 'none';
+                    document.getElementById('stravaImportSection').style.display = 'block';
+                    
+                    showNotification('✅ Successfully connected to Strava!', 'success');
+                } else {
+                    throw new Error(result.error || 'Failed to get access token');
+                }
+            } catch (error) {
+                console.error('Error exchanging code for token:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function goBackToAuth() {
+            document.getElementById('stravaAuthSection').style.display = 'block';
+            document.getElementById('stravaImportSection').style.display = 'none';
+            document.getElementById('stravaProgressSection').style.display = 'none';
+        }
+        
+        async function importStravaActivities() {
+            if (!stravaAccessToken) {
+                showNotification('❌ Please authenticate with Strava first', 'error');
+                return;
+            }
+            
+            const activityCount = document.getElementById('activityCount').value;
+            const activityType = document.getElementById('activityType').value;
+            const dateRange = document.getElementById('dateRange').value;
+            
+            // Move to progress section
+            document.getElementById('stravaImportSection').style.display = 'none';
+            document.getElementById('stravaProgressSection').style.display = 'block';
+            
+            try {
+                showNotification('🔄 Starting Strava import...', 'info');
+                
+                const response = await fetch('http://localhost:8080/strava/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        access_token: stravaAccessToken,
+                        count: parseInt(activityCount),
+                        type: activityType,
+                        days: parseInt(dateRange)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update progress
+                    updateImportProgress(result.imported, result.total, result.activities);
+                    
+                    // Refresh dashboard data
+                    loadData();
+                    
+                    showNotification(`✅ Successfully imported ${result.imported} activities!`, 'success');
+                    
+                    // Close modal after a delay
+                    setTimeout(() => {
+                        closeStravaImport();
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'Import failed');
+                }
+            } catch (error) {
+                console.error('Error importing Strava activities:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateImportProgress(imported, total, activities) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const importedList = document.getElementById('importedActivities');
+            
+            const percentage = (imported / total) * 100;
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = `Imported ${imported} of ${total} activities`;
+            
+            // Show imported activities
+            importedList.innerHTML = '';
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = `imported-item ${activity.success ? 'success' : 'error'}`;
+                item.textContent = `${activity.success ? '✅' : '❌'} ${activity.name} - ${activity.distance}km in ${activity.time}`;
+                importedList.appendChild(item);
+            });
+        }
+        
+        // Close Strava modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('stravaModal');
+            if (event.target === modal) {
+                closeStravaImport();
+            }
+        });
     </script>
 </body>
 </html>

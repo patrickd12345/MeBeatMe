@@ -75,10 +75,22 @@ This script will:
 
 ### Run MeBeatMe Server
 ```bash
-# Compile and run server
+# Compile and run SimpleHttpServer (recommended)
+javac SimpleHttpServer.java
+java SimpleHttpServer
+
+# Alternative: Run FitFileServerWithStorage
 javac FitFileServerWithStorage.java
 java FitFileServerWithStorage
 ```
+
+**Server Features:**
+- ✅ **RESTful API**: Complete CRUD operations for workouts
+- ✅ **CORS Support**: Cross-origin requests for web dashboard
+- ✅ **In-memory Storage**: Workout persistence with PPI tracking
+- ✅ **Real-time Updates**: Dynamic best PPI calculation
+- ✅ **Error Handling**: Comprehensive error responses with proper HTTP codes
+- ✅ **Strava Integration**: OAuth authentication and activity import API
 
 ### Test Server Endpoints
 ```bash
@@ -88,15 +100,47 @@ curl http://localhost:8080/health
 # Best PPI by bucket
 curl http://localhost:8080/sync/bests
 
-# Upload session
-curl -X POST http://localhost:8080/sync/upload
+# List all workouts
+curl http://localhost:8080/sync/sessions
+
+# Add manual workout
+curl -X POST http://localhost:8080/sync/runs \
+  -H "Content-Type: application/json" \
+  -d '[{"id":"test_workout","distanceMeters":5000,"elapsedSeconds":1200,"startedAtEpochMs":1757520000000}]'
+
+# Delete workout
+curl -X DELETE http://localhost:8080/sync/runs/test_workout
+
+# Strava Integration (requires setup)
+curl -X POST http://localhost:8080/strava/token \
+  -H "Content-Type: application/json" \
+  -d '{"code":"your_strava_auth_code"}'
+
+curl -X POST http://localhost:8080/strava/import \
+  -H "Content-Type: application/json" \
+  -d '{"access_token":"your_token","count":10,"type":"Run","days":30}'
 ```
 
 ### Open Web Dashboard
 ```bash
-# Open dashboard.html in browser
-Start-Process "dashboard.html"
+# Start Python HTTP server for dashboard
+python -m http.server 8082
+
+# Start Java API server
+javac SimpleHttpServer.java
+java SimpleHttpServer
+
+# Open dashboard in browser
+start http://localhost:8082/dashboard.html
 ```
+
+**Dashboard Features:**
+- ✅ **Manual Workout Entry**: Add workouts with date, distance (km), and time (hh:mm:ss)
+- ✅ **Real-time PPI Calculation**: Purdy Points formula with elite baseline times
+- ✅ **Workout Management**: View, add, and delete workouts
+- ✅ **Dynamic Best Tracking**: Automatically updates "PPI to beat"
+- ✅ **Modern UI**: Responsive design with animations and notifications
+- ✅ **Strava Integration**: Import activities directly from Strava with OAuth authentication
 
 ### Run Wear OS App (Android Studio)
 1. Open Android Studio
@@ -143,8 +187,8 @@ Start-Process "dashboard.html"
 - ✅ **Core KMP**: Purdy Points PPI system with model switching
 - ✅ **watchOS App**: Production-grade SwiftUI app with file import
 - ✅ **Wear OS**: Complete live run experience with haptic feedback
-- ✅ **Web Dashboard**: "MeBeatMe HQ" with real-time server data
-- ✅ **Server**: Java server with Purdy Points PPI calculation
+- ✅ **Web Dashboard**: Complete workout management with manual entry and CRUD operations
+- ✅ **API Server**: Java server with full REST API and CORS support
 - ✅ **CI/CD**: GitHub Actions with Windows-first workflow
 
 ## 🎯 Production watchOS App Complete
@@ -179,6 +223,8 @@ Start-Process "dashboard.html"
 
 - **PPI System**: Purdy Points model with cubic relationship
 - **watchOS App**: Complete SwiftUI app with file import and analysis
+- **Web Dashboard**: Full-featured workout management with manual entry, CRUD operations, and real-time PPI calculation
+- **API Server**: Java-based REST API with CORS support, in-memory storage, and dynamic PPI tracking
 - **CI/CD**: Automated builds with Windows-first workflow
 - **Testing**: Comprehensive test suite including 90-day PPI calculation
 - **Documentation**: Complete README and development workflow guides
