@@ -1,0 +1,56 @@
+{
+  "sessions": [
+    {
+      "id": "session_1757609719866_hc3tt98kv",
+      "distance": 5000,
+      "duration": 1500,
+      "ppi": 127.51670370370368,
+      "createdAt": 1757609719866,
+      "source": "strava",
+      "activityId": "Morning Run",
+      "name": "Morning Run"
+    },
+    {
+      "id": "session_1757609719866_7ek9q5gxu",
+      "distance": 10000,
+      "duration": 3000,
+      "ppi": 143.6034226296296,
+      "createdAt": 1757609719866,
+      "source": "strava",
+      "activityId": "Long Run",
+      "name": "Long Run"
+    },
+    {
+      "id": "session_1757609719867_gh5rhgew2",
+      "distance": 3000,
+      "duration": 900,
+      "ppi": 115.81247374020214,
+      "createdAt": 1757609719867,
+      "source": "strava",
+      "activityId": "Speed Work",
+      "name": "Speed Work"
+    },
+    {
+      "id": "session_1757609719867_4zl8l7etk",
+      "distance": 8000,
+      "duration": 2400,
+      "ppi": 138.21463698658872,
+      "createdAt": 1757609719867,
+      "source": "strava",
+      "activityId": "Tempo Run",
+      "name": "Tempo Run"
+    },
+    {
+      "id": "session_1757609719868_8s5qmc8zx",
+      "distance": 15000,
+      "duration": 4500,
+      "ppi": 159.8729570719114,
+      "createdAt": 1757609719868,
+      "source": "strava",
+      "activityId": "Long Run 2",
+      "name": "Long Run 2"
+    }
+  ],
+  "bestPpi": 159.8729570719114,
+  "lastUpdated": 1757617868530
+}

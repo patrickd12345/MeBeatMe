@@ -3,6 +3,7 @@
 !package.json
 !vercel.json
 !tsconfig.json
+!data/workout-data.json
 
 # Node.js
 node_modules/
