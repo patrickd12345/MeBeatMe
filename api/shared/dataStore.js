@@ -24,15 +24,21 @@ async function updateWorkoutData(newData) {
 }
 
 async function addSession(session) {
-  const current = await getWorkoutData();
-  const newSession = {
-    id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    ...session,
-    createdAt: Date.now()
-  };
-  const sessions = [newSession, ...current.sessions];
-  await persist(sessions);
-  return newSession;
+  try {
+    const current = await getWorkoutData();
+    const newSession = {
+      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...session,
+      createdAt: Date.now()
+    };
+    const sessions = [newSession, ...current.sessions];
+    await persist(sessions);
+    console.log(`Successfully added session: ${newSession.id} to KV store`);
+    return newSession;
+  } catch (error) {
+    console.error('Error adding session to KV store:', error);
+    throw error;
+  }
 }
 
 async function deleteSession(sessionId) {

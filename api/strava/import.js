@@ -80,6 +80,7 @@ export default async function handler(req, res) {
           };
           
           const savedSession = await addSession(sessionData);
+          console.log(`Saved session: ${savedSession.id} for activity: ${activity.name}`);
           
           return {
             id: activity.id,
