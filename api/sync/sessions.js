@@ -48,12 +48,22 @@ export default function handler(req, res) {
       });
     }
   } else if (req.method === 'GET') {
-    // Return session data
+    // Return session data with transformed fields for dashboard
     const workoutData = getWorkoutData();
+    const transformedSessions = workoutData.sessions.map(session => ({
+      id: session.id,
+      filename: session.name || session.id, // Use name if available, otherwise id
+      distance: session.distance,
+      duration: session.duration,
+      ppi: session.ppi,
+      createdAt: session.createdAt,
+      bucket: 'Running' // Default bucket for all sessions
+    }));
+    
     const sessionsData = {
       status: 'success',
-      sessions: workoutData.sessions,
-      count: workoutData.sessions.length,
+      sessions: transformedSessions,
+      count: transformedSessions.length,
       bestPpi: workoutData.bestPpi
     };
     
