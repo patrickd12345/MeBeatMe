@@ -56,8 +56,7 @@ export default function handler(req, res) {
       distance: session.distance,
       duration: session.duration,
       ppi: session.ppi,
-      createdAt: session.createdAt,
-      bucket: 'Running' // Default bucket for all sessions
+      createdAt: session.createdAt
     }));
     
     const sessionsData = {
