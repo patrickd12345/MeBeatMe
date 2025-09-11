@@ -7,6 +7,10 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/",
+      "dest": "/dashboard.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
