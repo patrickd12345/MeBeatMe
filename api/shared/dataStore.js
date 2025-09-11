@@ -1,10 +1,5 @@
 // Shared data store for MeBeatMe API
-// Using a simple file-based approach for Vercel serverless functions
-
-import fs from 'fs';
-import path from 'path';
-
-const DATA_FILE = '/tmp/mebeatme_data.json';
+// Using a simple in-memory approach with session persistence
 
 let workoutData = {
   sessions: [
@@ -19,82 +14,62 @@ let workoutData = {
   bestPpi: 355.0 // Single best PPI across all distances
 };
 
-function loadData() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      workoutData = JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading data:', error);
-  }
-}
-
-function saveData() {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(workoutData, null, 2));
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
+// Global variable to persist data across function calls
+if (typeof global.workoutData === 'undefined') {
+  global.workoutData = workoutData;
 }
 
 function getWorkoutData() {
-  loadData();
-  return workoutData;
+  return global.workoutData;
 }
 
 function updateWorkoutData(newData) {
-  loadData();
-  workoutData = { ...workoutData, ...newData };
+  global.workoutData = { ...global.workoutData, ...newData };
   
   // Recalculate best PPI across all sessions
-  if (workoutData.sessions.length > 0) {
-    const bestPpi = Math.max(...workoutData.sessions.map(session => session.ppi));
-    workoutData.bestPpi = bestPpi;
+  if (global.workoutData.sessions.length > 0) {
+    const bestPpi = Math.max(...global.workoutData.sessions.map(session => session.ppi));
+    global.workoutData.bestPpi = bestPpi;
   }
   
-  saveData();
-  return workoutData;
+  return global.workoutData;
 }
 
 function addSession(session) {
-  loadData();
-  
   const newSession = {
-    id: `session_${Date.now()}`,
+    id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     ...session,
     createdAt: Date.now()
   };
   
-  workoutData.sessions.push(newSession);
+  global.workoutData.sessions.push(newSession);
   
   // Update best PPI if this is better
-  if (session.ppi > workoutData.bestPpi) {
-    workoutData.bestPpi = session.ppi;
+  if (session.ppi > global.workoutData.bestPpi) {
+    global.workoutData.bestPpi = session.ppi;
   }
   
-  saveData();
+  console.log(`Added session: ${JSON.stringify(newSession)}`);
+  console.log(`Total sessions: ${global.workoutData.sessions.length}`);
+  
   return newSession;
 }
 
 function deleteSession(sessionId) {
-  loadData();
-  
-  const sessionIndex = workoutData.sessions.findIndex(session => session.id === sessionId);
+  const sessionIndex = global.workoutData.sessions.findIndex(session => session.id === sessionId);
   if (sessionIndex === -1) {
     return null;
   }
   
-  const deletedSession = workoutData.sessions.splice(sessionIndex, 1)[0];
+  const deletedSession = global.workoutData.sessions.splice(sessionIndex, 1)[0];
   
   // Recalculate best PPI across all remaining sessions
-  if (workoutData.sessions.length > 0) {
-    workoutData.bestPpi = Math.max(...workoutData.sessions.map(session => session.ppi));
+  if (global.workoutData.sessions.length > 0) {
+    global.workoutData.bestPpi = Math.max(...global.workoutData.sessions.map(session => session.ppi));
   } else {
-    workoutData.bestPpi = 0;
+    global.workoutData.bestPpi = 0;
   }
   
-  saveData();
   return deletedSession;
 }
 
