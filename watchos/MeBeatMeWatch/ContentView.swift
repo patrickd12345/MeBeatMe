@@ -1,70 +1,224 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+    @State private var showingImportView = false
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            // Home Tab
+            HomeTabView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+                .tag(0)
+            
+            // Import Tab
+            ImportTabView()
+                .tabItem {
+                    Image(systemName: "square.and.arrow.down")
+                    Text("Import")
+                }
+                .tag(1)
+            
+            // History Tab
+            HistoryTabView()
+                .tabItem {
+                    Image(systemName: "clock")
+                    Text("History")
+                }
+                .tag(2)
+            
+            // Settings Tab
+            SettingsTabView()
+                .tabItem {
+                    Image(systemName: "gear")
+                    Text("Settings")
+                }
+                .tag(3)
+        }
+        .onAppear {
+            print("MeBeatMe app launched")
+        }
+    }
+}
+
+// MARK: - Home Tab View
+struct HomeTabView: View {
     @State private var isWorkoutActive = false
     @State private var workoutStartTime: Date?
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
     @State private var workoutDistance: Double = 0.0
     @State private var ppiScore: Double = 0.0
+    @State private var showingImportView = false
     
     var body: some View {
-        VStack(spacing: 20) {
+        NavigationStack {
+            VStack(spacing: 20) {
+                // Header
+                headerSection
+                
+                if isWorkoutActive {
+                    // Workout Active View
+                    workoutActiveSection
+                } else {
+                    // Welcome View
+                    welcomeSection
+                }
+                
+                Spacer()
+                
+                // Quick Actions
+                quickActionsSection
+            }
+            .padding()
+            .navigationTitle("MeBeatMe")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingImportView = true
+                    }) {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingImportView) {
+                ImportView()
+                    .environment(ImportViewModel())
+                    .environment(AnalysisViewModel())
+            }
+        }
+        .onDisappear {
+            timer?.invalidate()
+        }
+    }
+    
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            Text("🏃‍♂️")
+                .font(.system(size: 40))
+            
             Text("MeBeatMe")
                 .font(.title2)
                 .fontWeight(.bold)
             
-            if isWorkoutActive {
-                // Workout Active View
-                VStack(spacing: 15) {
-                    Text("Workout Active")
-                        .font(.headline)
-                        .foregroundColor(.green)
-                    
-                    Text("Elapsed Time:")
-                        .font(.caption)
-                    
-                    Text(formatTime(elapsedTime))
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.blue)
-                    
-                    Text("Distance: \(String(format: "%.2f", workoutDistance)) km")
+            Text("Personal Performance Index")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    private var workoutActiveSection: some View {
+        VStack(spacing: 15) {
+            Text("Workout Active")
+                .font(.headline)
+                .foregroundColor(.green)
+            
+            // Main metrics
+            HStack(spacing: 20) {
+                VStack {
+                    Text("Time")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
-                    Text("PPI Score: \(String(format: "%.1f", ppiScore))")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    
-                    Button("Stop Workout") {
-                        stopWorkout()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundColor(.red)
+                    Text(formatTime(elapsedTime))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
                 }
-            } else {
-                // Welcome View
-                VStack(spacing: 15) {
-                    Text("Welcome to MeBeatMe!")
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                    
-                    Button("Start Workout") {
-                        startWorkout()
-                    }
-                    .buttonStyle(.borderedProminent)
+                
+                VStack {
+                    Text("Distance")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.2f km", workoutDistance))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
+                }
+                
+                VStack {
+                    Text("PPI")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.0f", ppiScore))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.green)
                 }
             }
             
-            Spacer()
+            Button("Stop Workout") {
+                stopWorkout()
+            }
+            .buttonStyle(.borderedProminent)
+            .foregroundColor(.red)
         }
         .padding()
-        .onAppear {
-            print("MeBeatMe app launched")
+        .background(Color.green.opacity(0.1))
+        .cornerRadius(12)
+    }
+    
+    private var welcomeSection: some View {
+        VStack(spacing: 20) {
+            Text("Welcome to MeBeatMe!")
+                .font(.headline)
+                .multilineTextAlignment(.center)
+            
+            Text("Track your runs and improve your Personal Performance Index")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Start Workout") {
+                startWorkout()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
-        .onDisappear {
-            timer?.invalidate()
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    private var quickActionsSection: some View {
+        VStack(spacing: 12) {
+            Text("Quick Actions")
+                .font(.headline)
+            
+            HStack(spacing: 12) {
+                Button(action: {
+                    showingImportView = true
+                }) {
+                    VStack {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.title2)
+                        Text("Import")
+                            .font(.caption)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundColor(.blue)
+                    .cornerRadius(8)
+                }
+                
+                NavigationLink(destination: RunHistoryView().environment(RunStore())) {
+                    VStack {
+                        Image(systemName: "clock")
+                            .font(.title2)
+                        Text("History")
+                            .font(.caption)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .foregroundColor(.orange)
+                    .cornerRadius(8)
+                }
+            }
         }
     }
     
@@ -111,6 +265,75 @@ struct ContentView: View {
         let minutes = Int(timeInterval) / 60
         let seconds = Int(timeInterval) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
+
+// MARK: - Import Tab View
+struct ImportTabView: View {
+    var body: some View {
+        NavigationStack {
+            ImportView()
+                .environment(ImportViewModel())
+                .environment(AnalysisViewModel())
+        }
+    }
+}
+
+// MARK: - History Tab View
+struct HistoryTabView: View {
+    var body: some View {
+        NavigationStack {
+            RunHistoryView()
+                .environment(RunStore())
+        }
+    }
+}
+
+// MARK: - Settings Tab View
+struct SettingsTabView: View {
+    @State private var notificationsEnabled = true
+    @State private var metricUnits = true
+    @State private var autoSync = true
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Preferences") {
+                    Toggle("Notifications", isOn: $notificationsEnabled)
+                    Toggle("Metric Units", isOn: $metricUnits)
+                    Toggle("Auto Sync", isOn: $autoSync)
+                }
+                
+                Section("About") {
+                    HStack {
+                        Text("Version")
+                        Spacer()
+                        Text("1.0.0")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Build")
+                        Spacer()
+                        Text("1")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Section("Data") {
+                    Button("Clear All Data") {
+                        // TODO: Implement clear data
+                    }
+                    .foregroundColor(.red)
+                    
+                    Button("Export Data") {
+                        // TODO: Implement data export
+                    }
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 

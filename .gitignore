@@ -96,3 +96,4 @@ artifacts/
 
 # Others
 *.fit
+.vercel

@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "FULL_DOMAIN": "mebeatme.ready2race.run",
+    "CORS_ORIGINS": "https://mebeatme.ready2race.run,https://ready2race.run",
+    "LOG_LEVEL": "INFO",
+    "STRAVA_CLIENT_SECRET": "YOUR_STRAVA_CLIENT_SECRET"
+  }
+}

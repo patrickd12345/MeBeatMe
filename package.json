@@ -1,0 +1,37 @@
+{
+  "name": "mebeatme",
+  "version": "1.0.0",
+  "description": "MeBeatMe - Personal Performance Index Dashboard",
+  "main": "dashboard.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step needed for Vercel'",
+    "build:gradle": "gradlew :web:build",
+    "build:web": "npm run copy:assets",
+    "copy:assets": "if not exist dist mkdir dist && copy dashboard.html dist\\ && copy dashboard-vercel.html dist\\ && xcopy api dist\\api\\ /E /I",
+    "deploy": "vercel --prod",
+    "preview": "vercel",
+    "serve": "cd dist && python -m http.server 8082",
+    "serve:local": "python -m http.server 8082",
+    "test": "echo 'No tests configured'",
+    "clean": "gradlew clean && if exist dist rmdir /s /q dist"
+  },
+  "keywords": [
+    "fitness",
+    "running",
+    "performance",
+    "dashboard",
+    "strava",
+    "ppi"
+  ],
+  "author": "Patrick Duchesneau",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/MeBeatMe.git"
+  },
+  "homepage": "https://mebeatme.ready2race.run"
+}

@@ -688,7 +688,7 @@
             
             try {
                 // Load best PPIs
-                const bestsResponse = await fetch('/api/sync/bests');
+                const bestsResponse = await fetch('http://localhost:8080/sync/bests');
                 const bestsData = await bestsResponse.json();
                 
                 if (bestsData.status === 'success') {
@@ -699,7 +699,7 @@
                 }
                 
                 // Load recent sessions
-                const sessionsResponse = await fetch('/api/sync/sessions');
+                const sessionsResponse = await fetch('http://localhost:8080/sync/sessions');
                 const sessionsData = await sessionsResponse.json();
                 
                 if (sessionsData.status === 'success') {
@@ -1009,7 +1009,7 @@
             }
             
             try {
-                const response = await fetch(`/api/sync/runs/${workoutId}`, {
+                const response = await fetch(`http://localhost:8080/sync/runs/${workoutId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1190,7 +1190,7 @@
                 submitBtn.disabled = true;
                 
                 // Send to server
-                const response = await fetch('/api/sync/runs', {
+                const response = await fetch('http://localhost:8080/sync/runs', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1320,7 +1320,7 @@
         
         function authenticateWithStrava() {
             // Strava OAuth configuration
-            const clientId = '157217'; // Your actual Strava Client ID
+            const clientId = 'YOUR_STRAVA_CLIENT_ID'; // You'll need to get this from Strava
             const redirectUri = encodeURIComponent(window.location.origin + '/dashboard.html');
             const scope = 'read,activity:read';
             
@@ -1352,7 +1352,7 @@
             try {
                 showNotification('🔄 Exchanging authorization code for access token...', 'info');
                 
-                const response = await fetch('/api/strava/token', {
+                const response = await fetch('http://localhost:8080/strava/token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1403,7 +1403,7 @@
             try {
                 showNotification('🔄 Starting Strava import...', 'info');
                 
-                const response = await fetch('/api/strava/import', {
+                const response = await fetch('http://localhost:8080/strava/import', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
