@@ -32,7 +32,8 @@ function loadInitialData() {
         distance: 5940,
         duration: 2498,
         ppi: 355.0,
-        createdAt: 1757520000000
+        createdAt: 1757520000000,
+        name: 'Sample Run'
       }
     ],
     bestPpi: 355.0
@@ -95,6 +96,8 @@ let workoutData = {
   ],
   bestPpi: 159.8729570719114
 };
+
+console.log('DataStore initialized with', workoutData.sessions.length, 'sessions');
 
 function getWorkoutData() {
   return workoutData;
