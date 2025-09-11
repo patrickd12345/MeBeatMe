@@ -35,6 +35,9 @@
     "CORS_ORIGINS": "https://mebeatme.ready2race.run,https://ready2race.run",
     "LOG_LEVEL": "INFO",
     "STRAVA_CLIENT_ID": "157217",
-    "STRAVA_CLIENT_SECRET": "3652b26562c819e1a13ebb34e517e707dab939b2"
+    "STRAVA_CLIENT_SECRET": "3652b26562c819e1a13ebb34e517e707dab939b2",
+    "KV_REST_API_URL": "@kv_rest_api_url",
+    "KV_REST_API_TOKEN": "@kv_rest_api_token",
+    "KV_REST_API_READ_ONLY_TOKEN": "@kv_rest_api_read_only_token"
   }
 }

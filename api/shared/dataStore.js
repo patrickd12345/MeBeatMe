@@ -1,20 +1,29 @@
-// Shared data store backed by Vercel KV (serverless-safe persistence)
-import { kv } from '@vercel/kv';
+// Shared data store using in-memory storage (fallback for Vercel KV issues)
+// Initialize with hardcoded data and allow runtime additions
 
-const KV_SESSIONS_KEY = 'mbm:sessions';
-const KV_BESTPPI_KEY = 'mbm:bestPpi';
+// Initialize with default data
+let workoutData = {
+  sessions: [
+    {
+      id: 'hardcoded_run',
+      distance: 5940,
+      duration: 2498,
+      ppi: 355,
+      createdAt: 1757520000000,
+      name: 'Sample Run'
+    }
+  ],
+  bestPpi: 355
+};
 
 async function getWorkoutData() {
-  const sessions = (await kv.get(KV_SESSIONS_KEY)) || [];
-  const bestPpi = (await kv.get(KV_BESTPPI_KEY)) || (sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0);
-  return { sessions, bestPpi };
+  return workoutData;
 }
 
 async function persist(sessions) {
-  await kv.set(KV_SESSIONS_KEY, sessions);
-  const bestPpi = sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0;
-  await kv.set(KV_BESTPPI_KEY, bestPpi);
-  return { sessions, bestPpi };
+  workoutData.sessions = sessions;
+  workoutData.bestPpi = sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0;
+  return workoutData;
 }
 
 async function updateWorkoutData(newData) {
@@ -33,10 +42,10 @@ async function addSession(session) {
     };
     const sessions = [newSession, ...current.sessions];
     await persist(sessions);
-    console.log(`Successfully added session: ${newSession.id} to KV store`);
+    console.log(`Successfully added session: ${newSession.id} to memory store`);
     return newSession;
   } catch (error) {
-    console.error('Error adding session to KV store:', error);
+    console.error('Error adding session to memory store:', error);
     throw error;
   }
 }
