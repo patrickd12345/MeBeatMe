@@ -117,6 +117,9 @@ export default function handler(req, res) {
         message: 'Internal server error'
       });
     }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
 }
 
 // Purdy Points calculation
