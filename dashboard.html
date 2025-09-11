@@ -1386,8 +1386,48 @@
                 if (result.success) {
                     // Update progress
                     updateImportProgress(result.imported, result.total, result.activities);
-                    
-                    // Refresh dashboard data
+
+                    // Optimistically append imported sessions to the list
+                    if (Array.isArray(result.activities)) {
+                        const optimisticSessions = result.activities.map(a => ({
+                            id: a.sessionId || a.id,
+                            filename: a.name || (a.id + ''),
+                            distance: a.distanceMeters ?? Math.round(parseFloat(a.distance || '0') * 1000),
+                            duration: a.durationSeconds ?? 0,
+                            ppi: parseFloat(a.ppi),
+                            createdAt: a.createdAtMs ?? Date.parse(a.date)
+                        }));
+                        const list = document.getElementById('sessions-list');
+                        if (list && optimisticSessions.length) {
+                            // Prepend new items to the top
+                            optimisticSessions.forEach(session => {
+                                const item = document.createElement('div');
+                                item.className = 'session-item';
+                                const date = new Date(session.createdAt);
+                                const distanceKm = (session.distance / 1000).toFixed(2);
+                                const durationMin = (session.duration / 60).toFixed(1);
+                                item.innerHTML = `
+                                    <div class="session-header">
+                                        <div><strong>${session.filename ? session.filename : session.id}</strong></div>
+                                        <div class="session-ppi">PPI: ${session.ppi.toFixed(1)}</div>
+                                    </div>
+                                    <div class="session-details">
+                                        <div><strong>Distance:</strong> ${distanceKm} km</div>
+                                        <div><strong>Duration:</strong> ${durationMin} min</div>
+                                        <div><strong>Date:</strong> ${date.toLocaleDateString()}</div>
+                                    </div>
+                                    <div class="session-actions">
+                                        <button class="delete-btn" onclick="deleteWorkout('${session.id}')" title="Delete workout">
+                                            🗑️ Delete
+                                        </button>
+                                    </div>
+                                `;
+                                list.prepend(item);
+                            });
+                        }
+                    }
+
+                    // Also refresh dashboard data to ensure consistency
                     loadData();
                     
                     showNotification(`✅ Successfully imported ${result.imported} activities!`, 'success');

@@ -88,6 +88,10 @@ export default async function handler(req, res) {
             time: formatTime(timeSeconds),
             date: activity.start_date,
             ppi: ppi.toFixed(1),
+            // numeric fields to allow optimistic rendering on dashboard
+            distanceMeters: distanceMeters,
+            durationSeconds: timeSeconds,
+            createdAtMs: new Date(activity.start_date).getTime(),
             success: true,
             sessionId: savedSession.id
           };
