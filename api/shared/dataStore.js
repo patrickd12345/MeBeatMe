@@ -1,5 +1,10 @@
 // Shared data store for MeBeatMe API
-// In production, this would be replaced with a real database
+// Using a simple file-based approach for Vercel serverless functions
+
+import fs from 'fs';
+import path from 'path';
+
+const DATA_FILE = '/tmp/mebeatme_data.json';
 
 let workoutData = {
   sessions: [
@@ -14,11 +19,32 @@ let workoutData = {
   bestPpi: 355.0 // Single best PPI across all distances
 };
 
+function loadData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      workoutData = JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
+}
+
+function saveData() {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(workoutData, null, 2));
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
+
 function getWorkoutData() {
+  loadData();
   return workoutData;
 }
 
 function updateWorkoutData(newData) {
+  loadData();
   workoutData = { ...workoutData, ...newData };
   
   // Recalculate best PPI across all sessions
@@ -27,10 +53,13 @@ function updateWorkoutData(newData) {
     workoutData.bestPpi = bestPpi;
   }
   
+  saveData();
   return workoutData;
 }
 
 function addSession(session) {
+  loadData();
+  
   const newSession = {
     id: `session_${Date.now()}`,
     ...session,
@@ -44,10 +73,13 @@ function addSession(session) {
     workoutData.bestPpi = session.ppi;
   }
   
+  saveData();
   return newSession;
 }
 
 function deleteSession(sessionId) {
+  loadData();
+  
   const sessionIndex = workoutData.sessions.findIndex(session => session.id === sessionId);
   if (sessionIndex === -1) {
     return null;
@@ -62,6 +94,7 @@ function deleteSession(sessionId) {
     workoutData.bestPpi = 0;
   }
   
+  saveData();
   return deletedSession;
 }
 
