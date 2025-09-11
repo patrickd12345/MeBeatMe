@@ -5,7 +5,7 @@
   "main": "dashboard.html",
   "scripts": {
     "dev": "vercel dev",
-    "build": "npm run build:gradle && npm run build:web",
+    "build": "echo 'Vercel build - no additional build step needed'",
     "build:gradle": "gradlew :web:build",
     "build:web": "npm run copy:assets",
     "copy:assets": "if not exist dist mkdir dist && copy dashboard.html dist\\ && copy dashboard-vercel.html dist\\ && xcopy api dist\\api\\ /E /I && copy vercel.json dist\\ && copy package.json dist\\",
