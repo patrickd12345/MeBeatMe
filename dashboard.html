@@ -1009,7 +1009,7 @@
             }
             
             try {
-                const response = await fetch(`/api/sync/runs/${workoutId}`, {
+                const response = await fetch(`/api/sync/sessions?id=${workoutId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',

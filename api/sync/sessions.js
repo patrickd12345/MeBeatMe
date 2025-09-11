@@ -79,9 +79,44 @@ export default function handler(req, res) {
     };
     
     res.status(200).json(sessionsData);
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
-  }
+  } else if (req.method === 'DELETE') {
+    // Handle workout deletion
+    try {
+      const workoutId = req.query.id || req.url.split('/').pop();
+      
+      const sessionIndex = sessionStorage.sessions.findIndex(session => session.id === workoutId);
+      if (sessionIndex === -1) {
+        res.status(404).json({
+          status: 'error',
+          message: 'Workout not found'
+        });
+        return;
+      }
+      
+      const deletedSession = sessionStorage.sessions.splice(sessionIndex, 1)[0];
+      
+      // Recalculate best PPI across all remaining sessions
+      if (sessionStorage.sessions.length > 0) {
+        sessionStorage.bestPpi = Math.max(...sessionStorage.sessions.map(session => session.ppi));
+      } else {
+        sessionStorage.bestPpi = 0;
+      }
+      
+      console.log(`Deleted session: ${workoutId}`);
+      console.log(`Remaining sessions: ${sessionStorage.sessions.length}`);
+      
+      res.status(200).json({
+        status: 'success',
+        message: 'Workout deleted successfully'
+      });
+      
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
 }
 
 // Purdy Points calculation
