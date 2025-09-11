@@ -18,6 +18,10 @@
     "test:shared": "gradlew :shared:test",
     "test:server": "gradlew :server:test",
     "test:web": "gradlew :web:test",
+    "test:playwright": "playwright test",
+    "test:playwright:ui": "playwright test --ui",
+    "test:playwright:headed": "playwright test --headed",
+    "test:playwright:debug": "playwright test --debug",
     "clean": "gradlew clean && if exist dist rmdir /s /q dist",
     "ci:build": "npm run test && npm run build",
     "ci:deploy": "npm run ci:build && npm run deploy",
@@ -41,9 +45,12 @@
     "type": "git",
     "url": "https://github.com/yourusername/MeBeatMe.git"
   },
-  "homepage": "https://mebeatme.ready2race.run"
-  ,
+  "homepage": "https://mebeatme.ready2race.run",
   "dependencies": {
-    "@vercel/kv": "^2.0.0"
+    "@vercel/kv": "^2.0.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
   }
 }
