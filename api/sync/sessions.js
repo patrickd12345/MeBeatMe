@@ -1,4 +1,6 @@
 // Vercel serverless function for sync/sessions endpoint
+import { getWorkoutData } from '../shared/dataStore.js';
+
 export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,19 +18,14 @@ export default function handler(req, res) {
     return;
   }
   
-  // Return session data (hardcoded for now)
+  // Get session data from data store
+  const workoutData = getWorkoutData();
+  
   const sessionsData = {
     status: 'success',
-    sessions: [
-      {
-        id: 'hardcoded_run',
-        distance: 5940,
-        duration: 2498,
-        ppi: 355.0,
-        createdAt: 1757520000000
-      }
-    ],
-    count: 1
+    sessions: workoutData.sessions,
+    count: workoutData.sessions.length,
+    bestPpi: workoutData.bestPpi
   };
   
   res.status(200).json(sessionsData);

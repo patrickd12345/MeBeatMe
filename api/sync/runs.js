@@ -1,4 +1,6 @@
 // Vercel serverless function for sync/runs endpoint
+import { addSession, getWorkoutData, deleteSession } from '../shared/dataStore.js';
+
 export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,12 +26,24 @@ export default function handler(req, res) {
       // Calculate PPI using Purdy formula
       const ppi = calculatePPI(distance, time);
       
-      console.log(`New workout: ${distance}m in ${time}s, PPI: ${ppi.toFixed(1)}`);
+      // Create session object
+      const sessionData = {
+        distance: distance,
+        duration: time,
+        ppi: ppi,
+        createdAt: timestamp
+      };
+      
+      // Add to data store
+      const newSession = addSession(sessionData);
+      
+      console.log(`New workout added: ${distance}m in ${time}s, PPI: ${ppi.toFixed(1)}`);
       
       res.status(200).json({
         status: 'success',
         message: 'Workout added successfully',
-        ppi: ppi.toFixed(1)
+        ppi: ppi.toFixed(1),
+        sessionId: newSession.id
       });
       
     } catch (error) {
@@ -44,12 +58,20 @@ export default function handler(req, res) {
     try {
       const workoutId = req.query.id || req.url.split('/').pop();
       
-      console.log(`Deleting workout: ${workoutId}`);
+      const deletedSession = deleteSession(workoutId);
       
-      res.status(200).json({
-        status: 'success',
-        message: 'Workout deleted successfully'
-      });
+      if (deletedSession) {
+        console.log(`Workout deleted: ${workoutId}`);
+        res.status(200).json({
+          status: 'success',
+          message: 'Workout deleted successfully'
+        });
+      } else {
+        res.status(404).json({
+          status: 'error',
+          message: 'Workout not found'
+        });
+      }
       
     } catch (error) {
       console.error('Error deleting workout:', error);

@@ -65,7 +65,7 @@ function deleteSession(sessionId) {
   return deletedSession;
 }
 
-module.exports = {
+export {
   getWorkoutData,
   updateWorkoutData,
   addSession,
