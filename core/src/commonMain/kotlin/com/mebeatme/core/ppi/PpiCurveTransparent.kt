@@ -31,7 +31,7 @@ object PpiCurveTransparent {
      * @return Corrected points score
      */
     fun correctedScore(distanceM: Double, elapsedSec: Double, corr: Corrections): Double =
-        score(distanceM, elapsedSec + corr.elevationAdjSec + corr.temperatureAdjSec)
+        score(distanceM, elapsedSec + corr.elevationAdjSec + corr.temperatureAdjSec + corr.heartRateAdjSec)
 
     /**
      * Find required pace (sec/km) to reach >= targetScore over given distance/time window.

@@ -80,6 +80,31 @@ Comprehensive test suite covers:
 - **PpiEngine**: Model switching and facade functionality
 - **Calibration**: Recreational vs elite scoring ranges
 
+## Heart Rate-Based Scoring
+
+The system now supports heart rate-based PPI calculations that segment runs based on effort variations:
+
+### Heart Rate Segmentation
+
+- **Automatic Segmentation**: Creates segments when heart rate changes significantly (>10 BPM)
+- **Effort-Based Corrections**: Applies time adjustments based on relative heart rate intensity
+- **Zone-Aware Analysis**: Considers heart rate zones for more accurate scoring
+
+### Effort Adjustment Formula
+
+```kotlin
+// Heart rate effort adjustment based on relative intensity
+val relativeIntensity = (segmentHR - baselineHR) / (maxHR - baselineHR)
+
+val adjustment = when {
+    relativeIntensity > 0.8 -> 0.15  // High intensity: +15% time penalty
+    relativeIntensity > 0.6 -> 0.08  // Moderate-high: +8% time penalty
+    relativeIntensity > 0.4 -> 0.03  // Moderate: +3% time penalty
+    relativeIntensity < 0.2 -> -0.05 // Low intensity: -5% time bonus
+    else -> 0.0  // Normal intensity: no adjustment
+}
+```
+
 ## Usage Examples
 
 ### Basic Scoring
@@ -91,6 +116,25 @@ val score = PpiEngine.score(5000.0, 1200.0) // 5K in 20:00
 // Switch to Transparent model
 PpiEngine.model = PpiModel.TransparentV0
 val transparentScore = PpiEngine.score(5000.0, 1200.0)
+```
+
+### Heart Rate-Based Scoring
+
+```kotlin
+// Heart rate-based PPI calculation
+val heartRateData = listOf(
+    HeartRatePoint(timestampEpochMs = 1000, heartRateBpm = 150),
+    HeartRatePoint(timestampEpochMs = 2000, heartRateBpm = 160),
+    HeartRatePoint(timestampEpochMs = 3000, heartRateBpm = 170)
+)
+
+val hrBasedScore = PpiEngine.scoreWithHeartRate(
+    distanceM = 5000.0,
+    elapsedSec = 1200.0,
+    heartRateData = heartRateData,
+    userMaxHR = 200,
+    baselineHR = 120
+)
 ```
 
 ### Performance Analysis
@@ -125,14 +169,16 @@ val requiredPace = PpiEngine.requiredPaceSecPerKm(targetScore, 0, 5000.0)
 
 ```
 core/src/commonMain/kotlin/com/mebeatme/core/ppi/
-├── PpiEngine.kt              # Unified facade
+├── PpiEngine.kt              # Unified facade with heart rate support
 ├── PpiCurvePurdy.kt          # Purdy-based scoring
 ├── PpiCurveTransparent.kt    # Refactored v0
-└── PurdyTable.kt             # Baseline anchor management
+├── PurdyTable.kt             # Baseline anchor management
+└── HeartRatePpiCalculator.kt # Heart rate-based segmentation and scoring
 
 core/src/commonMain/resources/
 └── purdy_baseline.csv        # Elite anchor points
 
 core/src/commonTest/kotlin/com/mebeatme/core/ppi/
-└── PpiPurdyTest.kt           # Comprehensive test suite
+├── PpiPurdyTest.kt           # Comprehensive test suite
+└── HeartRatePpiCalculatorTest.kt # Heart rate calculation tests
 ```

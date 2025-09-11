@@ -1,5 +1,6 @@
 package com.mebeatme.core.ppi
 
+import com.mebeatme.core.Corrections
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -8,7 +9,7 @@ import kotlin.test.assertTrue
 class PurdyTableTest {
     
     @Test
-    fun `should load baseline anchors correctly`() {
+    fun shouldLoadBaselineAnchorsCorrectly() {
         val anchors = PurdyTable.getAnchors()
         
         assertEquals(5, anchors.size)
@@ -27,7 +28,7 @@ class PurdyTableTest {
     }
     
     @Test
-    fun `should find closest anchor correctly`() {
+    fun shouldFindClosestAnchorCorrectly() {
         val closest = PurdyTable.findClosestAnchor(3000.0)
         assertNotNull(closest)
         assertEquals(1500.0, closest.distanceM) // Should find 1500m as closest to 3000m
@@ -38,7 +39,7 @@ class PurdyTableTest {
     }
     
     @Test
-    fun `should interpolate baseline time correctly`() {
+    fun shouldInterpolateBaselineTimeCorrectly() {
         // Test exact anchor points
         assertEquals(230.0, PurdyTable.getBaselineTime(1500.0), 0.1)
         assertEquals(780.0, PurdyTable.getBaselineTime(5000.0), 0.1)
@@ -53,7 +54,7 @@ class PurdyTableTest {
     }
     
     @Test
-    fun `should handle edge cases`() {
+    fun shouldHandleEdgeCases() {
         // Very short distance
         val shortTime = PurdyTable.getBaselineTime(100.0)
         assertEquals(230.0, shortTime, 0.1) // Should clamp to first anchor
@@ -67,14 +68,14 @@ class PurdyTableTest {
 class PpiCurvePurdyTest {
     
     @Test
-    fun `should score elite baseline correctly`() {
+    fun shouldScoreEliteBaselineCorrectly() {
         // Elite 5K time should score ~1000 points
         val score = PpiCurvePurdy.score(5000.0, 780.0)
         assertEquals(1000.0, score, 1.0) // Allow small tolerance
     }
     
     @Test
-    fun `should score faster than elite higher`() {
+    fun shouldScoreFasterThanEliteHigher() {
         // Faster than elite should score higher
         val eliteScore = PpiCurvePurdy.score(5000.0, 780.0)
         val fasterScore = PpiCurvePurdy.score(5000.0, 700.0) // 10% faster
@@ -84,7 +85,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should score slower than elite lower`() {
+    fun shouldScoreSlowerThanEliteLower() {
         // Slower than elite should score lower
         val eliteScore = PpiCurvePurdy.score(5000.0, 780.0)
         val slowerScore = PpiCurvePurdy.score(5000.0, 900.0) // ~15% slower
@@ -94,7 +95,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should respect score bounds`() {
+    fun shouldRespectScoreBounds() {
         // Very slow time should hit minimum
         val slowScore = PpiCurvePurdy.score(5000.0, 2000.0) // Very slow
         assertTrue(slowScore >= 100.0)
@@ -105,7 +106,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should calculate performance ratio correctly`() {
+    fun shouldCalculatePerformanceRatioCorrectly() {
         val ratio = PpiCurvePurdy.getPerformanceRatio(5000.0, 780.0)
         assertEquals(1.0, ratio, 0.01) // Elite baseline should be 1.0
         
@@ -117,7 +118,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should invert score to required time correctly`() {
+    fun shouldInvertScoreToRequiredTimeCorrectly() {
         val targetScore = 1000.0
         val requiredTime = PpiCurvePurdy.requiredTimeFor(5000.0, targetScore)
         
@@ -127,7 +128,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should calculate required pace correctly`() {
+    fun shouldCalculateRequiredPaceCorrectly() {
         val targetScore = 1000.0
         val requiredPace = PpiCurvePurdy.requiredPaceSecPerKm(5000.0, targetScore)
         
@@ -136,7 +137,7 @@ class PpiCurvePurdyTest {
     }
     
     @Test
-    fun `should handle corrections correctly`() {
+    fun shouldHandleCorrectionsCorrectly() {
         val baseScore = PpiCurvePurdy.score(5000.0, 780.0)
         val correctedScore = PpiCurvePurdy.correctedScore(5000.0, 780.0, Corrections())
         
@@ -147,7 +148,7 @@ class PpiCurvePurdyTest {
 class PpiEngineTest {
     
     @Test
-    fun `should switch between models correctly`() {
+    fun shouldSwitchBetweenModelsCorrectly() {
         // Test Purdy model (default)
         PpiEngine.model = PpiModel.PurdyV1
         val purdyScore = PpiEngine.score(5000.0, 780.0)
@@ -163,7 +164,7 @@ class PpiEngineTest {
     }
     
     @Test
-    fun `should provide performance ratio for Purdy model only`() {
+    fun shouldProvidePerformanceRatioForPurdyModelOnly() {
         PpiEngine.model = PpiModel.PurdyV1
         val ratio = PpiEngine.getPerformanceRatio(5000.0, 780.0)
         assertNotNull(ratio)
@@ -175,7 +176,7 @@ class PpiEngineTest {
     }
     
     @Test
-    fun `should provide baseline time for Purdy model only`() {
+    fun shouldProvideBaselineTimeForPurdyModelOnly() {
         PpiEngine.model = PpiModel.PurdyV1
         val baseline = PpiEngine.getBaselineTime(5000.0)
         assertNotNull(baseline)
@@ -187,7 +188,7 @@ class PpiEngineTest {
     }
     
     @Test
-    fun `should calculate required pace for both models`() {
+    fun shouldCalculateRequiredPaceForBothModels() {
         val targetScore = 1000.0
         
         PpiEngine.model = PpiModel.PurdyV1
@@ -208,7 +209,7 @@ class PpiEngineTest {
 class CalibrationTest {
     
     @Test
-    fun `should calibrate recreational runner scores correctly`() {
+    fun shouldCalibrateRecreationalRunnerScoresCorrectly() {
         // Test recreational 10K times (should score 300-500 range with new scaling)
         val recreational10k = PpiCurvePurdy.score(10000.0, 2400.0) // 40:00 10K
         assertTrue(recreational10k >= 300.0 && recreational10k <= 500.0)
@@ -221,7 +222,7 @@ class CalibrationTest {
     }
     
     @Test
-    fun `should maintain elite baseline at 1000 points`() {
+    fun shouldMaintainEliteBaselineAt1000Points() {
         // All elite baseline times should score ~1000 points
         val elite1500 = PpiCurvePurdy.score(1500.0, 230.0)
         val elite5k = PpiCurvePurdy.score(5000.0, 780.0)
