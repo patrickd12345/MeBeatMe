@@ -14,7 +14,12 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Handle Strava activity import
     try {
-      const { access_token, count = 10, type = 'Run', days = 30 } = req.body;
+      let { access_token, count = 10, type = 'Run', days = 30 } = req.body;
+      // Fallback: try read cookie if token not supplied in body
+      if (!access_token && req.headers.cookie) {
+        const m = /(?:^|; )strava_access_token=([^;]+)/.exec(req.headers.cookie);
+        if (m) access_token = decodeURIComponent(m[1]);
+      }
       
       if (!access_token) {
         res.status(400).json({
