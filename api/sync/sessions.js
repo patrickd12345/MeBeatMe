@@ -1,7 +1,7 @@
 // Vercel serverless function for sync/sessions endpoint
 import { getWorkoutData, addSession, deleteSession } from '../shared/dataStore.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -31,7 +31,7 @@ export default function handler(req, res) {
         createdAt: timestamp
       };
       
-      const newSession = addSession(sessionData);
+      const newSession = await addSession(sessionData);
       
       res.status(200).json({
         status: 'success',
@@ -49,7 +49,7 @@ export default function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     // Return session data with transformed fields for dashboard
-    const workoutData = getWorkoutData();
+    const workoutData = await getWorkoutData();
     const transformedSessions = workoutData.sessions.map(session => ({
       id: session.id,
       filename: session.name || session.id, // Use name if available, otherwise id
@@ -72,7 +72,7 @@ export default function handler(req, res) {
     try {
       const workoutId = req.query.id || req.url.split('/').pop();
       
-      const deletedSession = deleteSession(workoutId);
+      const deletedSession = await deleteSession(workoutId);
       if (!deletedSession) {
         res.status(404).json({
           status: 'error',

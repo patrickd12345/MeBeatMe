@@ -79,7 +79,7 @@ export default async function handler(req, res) {
             name: activity.name
           };
           
-          const savedSession = addSession(sessionData);
+          const savedSession = await addSession(sessionData);
           
           return {
             id: activity.id,

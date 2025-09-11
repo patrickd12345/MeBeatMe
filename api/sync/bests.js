@@ -1,7 +1,7 @@
 // Vercel serverless function for sync/bests endpoint
 import { getWorkoutData } from '../shared/dataStore.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -20,7 +20,7 @@ export default function handler(req, res) {
   
   try {
     // Get real data from data store
-    const workoutData = getWorkoutData();
+    const workoutData = await getWorkoutData();
     
     // Calculate best PPIs by distance ranges (simplified for now)
     const bests = {};
