@@ -1,5 +1,4 @@
 // Vercel serverless function for sync/sessions endpoint
-import { getWorkoutData } from '../shared/dataStore.js';
 
 // In-memory storage for this session
 let sessionStorage = {
