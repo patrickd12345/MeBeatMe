@@ -1190,12 +1190,12 @@
                 submitBtn.disabled = true;
                 
                 // Send to server
-                const response = await fetch('/api/sync/runs', {
+                const response = await fetch('/api/sync/sessions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify([workoutData])
+                    body: JSON.stringify(workoutData)
                 });
                 
                 const result = await response.json();
