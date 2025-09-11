@@ -983,13 +983,13 @@
                 
                 item.innerHTML = `
                     <div class="session-header">
-                        <div><strong>${session.filename}</strong></div>
+                        <div><strong>${session.filename || session.id}</strong></div>
                         <div class="session-ppi">PPI: ${session.ppi.toFixed(1)}</div>
                     </div>
                     <div class="session-details">
                         <div><strong>Distance:</strong> ${distanceKm} km</div>
                         <div><strong>Duration:</strong> ${durationMin} min</div>
-                        <div><strong>Bucket:</strong> ${session.bucket}</div>
+                        <div><strong>Bucket:</strong> ${session.bucket || 'Running'}</div>
                         <div><strong>Date:</strong> ${date.toLocaleDateString()}</div>
                     </div>
                     <div class="session-actions">
