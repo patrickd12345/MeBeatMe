@@ -1,7 +1,19 @@
 // Shared data store for MeBeatMe API
-// Using a simple in-memory approach with session persistence
+// Using persistent file storage instead of in-memory
 
-let workoutData = {
+import fs from 'fs';
+import path from 'path';
+
+const DATA_FILE = path.join(process.cwd(), 'data', 'workout-data.json');
+
+// Ensure data directory exists
+const dataDir = path.dirname(DATA_FILE);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Default data structure
+const defaultData = {
   sessions: [
     {
       id: 'hardcoded_run',
@@ -11,28 +23,52 @@ let workoutData = {
       createdAt: 1757520000000
     }
   ],
-  bestPpi: 355.0 // Single best PPI across all distances
+  bestPpi: 355.0
 };
 
-// Global variable to persist data across function calls
-if (typeof global.workoutData === 'undefined') {
-  global.workoutData = workoutData;
+// Load data from file
+function loadData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading data file:', error);
+  }
+  return defaultData;
 }
 
+// Save data to file
+function saveData(data) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    console.log(`Data saved to ${DATA_FILE}`);
+  } catch (error) {
+    console.error('Error saving data file:', error);
+  }
+}
+
+// Initialize data
+let workoutData = loadData();
+
 function getWorkoutData() {
-  return global.workoutData;
+  return workoutData;
 }
 
 function updateWorkoutData(newData) {
-  global.workoutData = { ...global.workoutData, ...newData };
+  workoutData = { ...workoutData, ...newData };
   
   // Recalculate best PPI across all sessions
-  if (global.workoutData.sessions.length > 0) {
-    const bestPpi = Math.max(...global.workoutData.sessions.map(session => session.ppi));
-    global.workoutData.bestPpi = bestPpi;
+  if (workoutData.sessions.length > 0) {
+    const bestPpi = Math.max(...workoutData.sessions.map(session => session.ppi));
+    workoutData.bestPpi = bestPpi;
   }
   
-  return global.workoutData;
+  // Save to file
+  saveData(workoutData);
+  
+  return workoutData;
 }
 
 function addSession(session) {
@@ -42,33 +78,39 @@ function addSession(session) {
     createdAt: Date.now()
   };
   
-  global.workoutData.sessions.push(newSession);
+  workoutData.sessions.push(newSession);
   
   // Update best PPI if this is better
-  if (session.ppi > global.workoutData.bestPpi) {
-    global.workoutData.bestPpi = session.ppi;
+  if (session.ppi > workoutData.bestPpi) {
+    workoutData.bestPpi = session.ppi;
   }
   
   console.log(`Added session: ${JSON.stringify(newSession)}`);
-  console.log(`Total sessions: ${global.workoutData.sessions.length}`);
+  console.log(`Total sessions: ${workoutData.sessions.length}`);
+  
+  // Save to file
+  saveData(workoutData);
   
   return newSession;
 }
 
 function deleteSession(sessionId) {
-  const sessionIndex = global.workoutData.sessions.findIndex(session => session.id === sessionId);
+  const sessionIndex = workoutData.sessions.findIndex(session => session.id === sessionId);
   if (sessionIndex === -1) {
     return null;
   }
   
-  const deletedSession = global.workoutData.sessions.splice(sessionIndex, 1)[0];
+  const deletedSession = workoutData.sessions.splice(sessionIndex, 1)[0];
   
   // Recalculate best PPI across all remaining sessions
-  if (global.workoutData.sessions.length > 0) {
-    global.workoutData.bestPpi = Math.max(...global.workoutData.sessions.map(session => session.ppi));
+  if (workoutData.sessions.length > 0) {
+    workoutData.bestPpi = Math.max(...workoutData.sessions.map(session => session.ppi));
   } else {
-    global.workoutData.bestPpi = 0;
+    workoutData.bestPpi = 0;
   }
+  
+  // Save to file
+  saveData(workoutData);
   
   return deletedSession;
 }

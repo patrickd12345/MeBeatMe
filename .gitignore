@@ -1,3 +1,10 @@
+# Data files
+data/
+*.json
+!package.json
+!vercel.json
+!tsconfig.json
+
 # Node.js
 node_modules/
 npm-debug.log*
