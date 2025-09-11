@@ -41,8 +41,5 @@
     "type": "git",
     "url": "https://github.com/yourusername/MeBeatMe.git"
   },
-  "homepage": "https://mebeatme.ready2race.run",
-  "dependencies": {
-    "express": "^5.1.0"
-  }
+  "homepage": "https://mebeatme.ready2race.run"
 }
