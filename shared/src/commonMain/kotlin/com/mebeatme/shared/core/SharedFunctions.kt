@@ -151,3 +151,4 @@ fun RunDTO.calculatePpi(): RunDTO {
     return this.copy(ppi = purdyScore(this.distanceMeters, this.elapsedSeconds))
 }
 
+

@@ -549,14 +549,6 @@
                     <li><strong>Recreational Performance:</strong> 300-500 points</li>
                     <li><strong>Moderate Performance:</strong> 100 points (minimum score)</li>
                 </ul>
-                <p><strong>Distance Buckets:</strong></p>
-                <ul>
-                    <li><strong>KM_1_3:</strong> 1-3 kilometers</li>
-                    <li><strong>KM_3_8:</strong> 3-8 kilometers</li>
-                    <li><strong>KM_8_15:</strong> 8-15 kilometers</li>
-                    <li><strong>KM_15_25:</strong> 15-25 kilometers</li>
-                    <li><strong>KM_25P:</strong> 25+ kilometers</li>
-                </ul>
             </div>
         </div>
     </div>
@@ -724,24 +716,18 @@
             const grid = document.getElementById('bests-grid');
             grid.innerHTML = '';
             
-            const bucketNames = {
-                'KM_1_3': '1-3K',
-                'KM_3_8': '3-8K', 
-                'KM_8_15': '8-15K',
-                'KM_15_25': '15-25K',
-                'KM_25P': '25K+'
-            };
             
             if (Object.keys(bests).length === 0) {
                 grid.innerHTML = '<div class="empty-state">No performance data yet. Upload your first FIT file to see your best PPIs!</div>';
                 return;
             }
             
-            Object.entries(bests).forEach(([bucket, ppi]) => {
+            Object.entries(bests).forEach(([distance, ppi]) => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
                 card.innerHTML = `
                     <div class="stat-value">${ppi.toFixed(1)}</div>
+                    <div class="stat-label">${distance}</div>
                 `;
                 grid.appendChild(card);
             });
@@ -759,8 +745,8 @@
             const workoutsToBeat = [];
             
             // Find your best performance (highest PPI) to focus on
-            const bestEntry = Object.entries(bests).reduce((best, [bucket, ppi]) => 
-                ppi > best.ppi ? {bucket, ppi} : best, {bucket: '', ppi: 0});
+            const bestEntry = Object.entries(bests).reduce((best, [distance, ppi]) => 
+                ppi > best.ppi ? {distance, ppi} : best, {distance: '', ppi: 0});
             
             if (bestEntry.ppi === 0) {
                 section.innerHTML = '<div class="empty-state">No performance data to create challenges from!</div>';
@@ -768,7 +754,6 @@
             }
             
             // Use the actual distance from your best performance
-            // For KM_3_8 bucket, use 5.94km (your actual run distance)
             const actualRunDistance = 5.94; // Your real run distance
             
             // Use the PPI from the server (which is already calculated correctly)
@@ -845,7 +830,6 @@
                 
                 workoutsToBeat.push({
                     title: workout.title,
-                    bucket: "Your Performance",
                     currentPace: `${currentPaceMin}:${currentPaceSec.toString().padStart(2, '0')}/km`,
                     targetPace: `${targetPaceMin}:${targetPaceSec.toString().padStart(2, '0')}/km`,
                     duration: durationFormatted,
@@ -936,16 +920,6 @@
             return baselines[baselines.length - 1].time;
         }
         
-        function getBucketInfo(bucket) {
-            const bucketMap = {
-                'KM_1_3': { name: '1-3K Sprint', minDistance: 1000, maxDistance: 3000 },
-                'KM_3_8': { name: '3-8K Short Run', minDistance: 3000, maxDistance: 8000 },
-                'KM_8_15': { name: '8-15K Medium Run', minDistance: 8000, maxDistance: 15000 },
-                'KM_15_25': { name: '15-25K Long Run', minDistance: 15000, maxDistance: 25000 },
-                'KM_25P': { name: '25K+ Ultra', minDistance: 25000, maxDistance: 100000 }
-            };
-            return bucketMap[bucket] || { name: bucket, minDistance: 5000, maxDistance: 10000 };
-        }
         
         function calculateTargetPace(targetPpi, distanceMeters) {
             // Correct Purdy formula: PPI = 1000 * (actual_time / baseline_time)^(-2.0)
