@@ -1,4 +1,5 @@
 // Vercel serverless function for Strava activity import
+import { addSession } from '../shared/dataStore.js';
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -67,6 +68,19 @@ export default async function handler(req, res) {
           
           const ppi = calculatePPI(distanceMeters, timeSeconds);
           
+          // Save to shared data store
+          const sessionData = {
+            distance: distanceMeters,
+            duration: timeSeconds,
+            ppi: ppi,
+            createdAt: new Date(activity.start_date).getTime(),
+            source: 'strava',
+            activityId: activity.id,
+            name: activity.name
+          };
+          
+          const savedSession = addSession(sessionData);
+          
           return {
             id: activity.id,
             name: activity.name,
@@ -74,7 +88,8 @@ export default async function handler(req, res) {
             time: formatTime(timeSeconds),
             date: activity.start_date,
             ppi: ppi.toFixed(1),
-            success: true
+            success: true,
+            sessionId: savedSession.id
           };
         });
       

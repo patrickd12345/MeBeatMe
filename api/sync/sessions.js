@@ -1,18 +1,5 @@
 // Vercel serverless function for sync/sessions endpoint
-
-// In-memory storage for this session
-let sessionStorage = {
-  sessions: [
-    {
-      id: 'hardcoded_run',
-      distance: 5940,
-      duration: 2498,
-      ppi: 355.0,
-      createdAt: 1757520000000
-    }
-  ],
-  bestPpi: 355.0
-};
+import { getWorkoutData, addSession, deleteSession } from '../shared/dataStore.js';
 
 export default function handler(req, res) {
   // Set CORS headers
@@ -37,23 +24,14 @@ export default function handler(req, res) {
       // Calculate PPI using Purdy formula
       const ppi = calculatePPI(distance, time);
       
-      const newSession = {
-        id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      const sessionData = {
         distance: distance,
         duration: time,
         ppi: ppi,
         createdAt: timestamp
       };
       
-      sessionStorage.sessions.push(newSession);
-      
-      // Update best PPI if this is better
-      if (ppi > sessionStorage.bestPpi) {
-        sessionStorage.bestPpi = ppi;
-      }
-      
-      console.log(`Added session: ${JSON.stringify(newSession)}`);
-      console.log(`Total sessions: ${sessionStorage.sessions.length}`);
+      const newSession = addSession(sessionData);
       
       res.status(200).json({
         status: 'success',
@@ -71,11 +49,12 @@ export default function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     // Return session data
+    const workoutData = getWorkoutData();
     const sessionsData = {
       status: 'success',
-      sessions: sessionStorage.sessions,
-      count: sessionStorage.sessions.length,
-      bestPpi: sessionStorage.bestPpi
+      sessions: workoutData.sessions,
+      count: workoutData.sessions.length,
+      bestPpi: workoutData.bestPpi
     };
     
     res.status(200).json(sessionsData);
@@ -84,8 +63,8 @@ export default function handler(req, res) {
     try {
       const workoutId = req.query.id || req.url.split('/').pop();
       
-      const sessionIndex = sessionStorage.sessions.findIndex(session => session.id === workoutId);
-      if (sessionIndex === -1) {
+      const deletedSession = deleteSession(workoutId);
+      if (!deletedSession) {
         res.status(404).json({
           status: 'error',
           message: 'Workout not found'
@@ -93,17 +72,7 @@ export default function handler(req, res) {
         return;
       }
       
-      const deletedSession = sessionStorage.sessions.splice(sessionIndex, 1)[0];
-      
-      // Recalculate best PPI across all remaining sessions
-      if (sessionStorage.sessions.length > 0) {
-        sessionStorage.bestPpi = Math.max(...sessionStorage.sessions.map(session => session.ppi));
-      } else {
-        sessionStorage.bestPpi = 0;
-      }
-      
       console.log(`Deleted session: ${workoutId}`);
-      console.log(`Remaining sessions: ${sessionStorage.sessions.length}`);
       
       res.status(200).json({
         status: 'success',
