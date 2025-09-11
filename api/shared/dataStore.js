@@ -1,56 +1,38 @@
 // Shared data store for MeBeatMe API
-// Using persistent file storage instead of in-memory
+// Using in-memory storage with initialization from committed data
 
 import fs from 'fs';
 import path from 'path';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'workout-data.json');
-
-// Ensure data directory exists
-const dataDir = path.dirname(DATA_FILE);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Default data structure
-const defaultData = {
-  sessions: [
-    {
-      id: 'hardcoded_run',
-      distance: 5940,
-      duration: 2498,
-      ppi: 355.0,
-      createdAt: 1757520000000
-    }
-  ],
-  bestPpi: 355.0
-};
-
-// Load data from file
-function loadData() {
+// Try to load initial data from committed file, fallback to default
+function loadInitialData() {
   try {
+    const DATA_FILE = path.join(process.cwd(), 'data', 'workout-data.json');
     if (fs.existsSync(DATA_FILE)) {
       const data = fs.readFileSync(DATA_FILE, 'utf8');
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Error loading data file:', error);
+    console.error('Error loading initial data file:', error);
   }
-  return defaultData;
+  
+  // Fallback to default data
+  return {
+    sessions: [
+      {
+        id: 'hardcoded_run',
+        distance: 5940,
+        duration: 2498,
+        ppi: 355.0,
+        createdAt: 1757520000000
+      }
+    ],
+    bestPpi: 355.0
+  };
 }
 
-// Save data to file
-function saveData(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    console.log(`Data saved to ${DATA_FILE}`);
-  } catch (error) {
-    console.error('Error saving data file:', error);
-  }
-}
-
-// Initialize data
-let workoutData = loadData();
+// Initialize data (this will be the committed data in production)
+let workoutData = loadInitialData();
 
 function getWorkoutData() {
   return workoutData;
@@ -64,9 +46,6 @@ function updateWorkoutData(newData) {
     const bestPpi = Math.max(...workoutData.sessions.map(session => session.ppi));
     workoutData.bestPpi = bestPpi;
   }
-  
-  // Save to file
-  saveData(workoutData);
   
   return workoutData;
 }
@@ -88,9 +67,6 @@ function addSession(session) {
   console.log(`Added session: ${JSON.stringify(newSession)}`);
   console.log(`Total sessions: ${workoutData.sessions.length}`);
   
-  // Save to file
-  saveData(workoutData);
-  
   return newSession;
 }
 
@@ -108,9 +84,6 @@ function deleteSession(sessionId) {
   } else {
     workoutData.bestPpi = 0;
   }
-  
-  // Save to file
-  saveData(workoutData);
   
   return deletedSession;
 }
