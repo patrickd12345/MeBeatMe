@@ -1,0 +1,36 @@
+name: Simple Deploy Test
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Deploy to Vercel
+        run: |
+          echo "🚀 Deploying to Vercel..."
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          
+      - name: Success
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Your app is live at: https://mebeatme.ready2race.run"
