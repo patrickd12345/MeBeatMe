@@ -153,6 +153,12 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+      
+      - name: Link Vercel project (production)
+        run: |
+          echo "🔗 Linking Vercel project for production..."
+          cd dist
+          vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
           
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
@@ -161,11 +167,11 @@ jobs:
         run: |
           echo "🚀 Deploying to Vercel..."
           cd dist
-          vercel --prod --token $VERCEL_TOKEN --yes
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
-          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ env.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           
       - name: Notify Deployment Success
         run: |
@@ -192,6 +198,12 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+      
+      - name: Link Vercel project (preview)
+        run: |
+          echo "🔗 Linking Vercel project for preview..."
+          cd dist
+          vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
           
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
@@ -200,11 +212,11 @@ jobs:
         run: |
           echo "🔍 Deploying preview to Vercel..."
           cd dist
-          vercel --token ${{ env.VERCEL_TOKEN }} --yes
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
-          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ env.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           
       - name: Comment PR with Preview URL
         uses: actions/github-script@v7
