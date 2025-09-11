@@ -31,12 +31,23 @@ export default async function handler(req, res) {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          client_id: '157217',
+          client_id: process.env.STRAVA_CLIENT_ID || '157217',
           client_secret: process.env.STRAVA_CLIENT_SECRET || 'YOUR_STRAVA_CLIENT_SECRET',
           code: code,
           grant_type: 'authorization_code'
         })
       });
+      
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error('Strava token exchange failed:', tokenResponse.status, errorText);
+        res.status(400).json({
+          success: false,
+          error: 'Failed to exchange authorization code with Strava',
+          details: `HTTP ${tokenResponse.status}: ${errorText}`
+        });
+        return;
+      }
       
       const tokenData = await tokenResponse.json();
       

@@ -40,7 +40,14 @@ export default async function handler(req, res) {
       );
       
       if (!activitiesResponse.ok) {
-        throw new Error(`Strava API error: ${activitiesResponse.status}`);
+        const errorText = await activitiesResponse.text();
+        console.error('Strava API error:', activitiesResponse.status, errorText);
+        res.status(400).json({
+          success: false,
+          error: 'Failed to fetch activities from Strava',
+          details: `HTTP ${activitiesResponse.status}: ${errorText}`
+        });
+        return;
       }
       
       const activities = await activitiesResponse.json();
