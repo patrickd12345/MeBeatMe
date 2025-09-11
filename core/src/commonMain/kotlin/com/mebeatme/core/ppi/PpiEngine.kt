@@ -1,6 +1,7 @@
 package com.mebeatme.core.ppi
 
 import com.mebeatme.core.Corrections
+import com.mebeatme.core.HeartRatePoint
 
 /**
  * PPI model types available in the system.
@@ -32,7 +33,7 @@ object PpiEngine {
     fun score(distanceM: Double, elapsedSec: Double, corr: Corrections = Corrections()): Double =
         when (model) {
             PpiModel.TransparentV0 -> PpiCurveTransparent.correctedScore(distanceM, elapsedSec, corr)
-            PpiModel.PurdyV1 -> PpiCurvePurdy.score(distanceM, elapsedSec + corr.elevationAdjSec + corr.temperatureAdjSec)
+            PpiModel.PurdyV1 -> PpiCurvePurdy.score(distanceM, elapsedSec + corr.elevationAdjSec + corr.temperatureAdjSec + corr.heartRateAdjSec)
         }
     
     /**
@@ -100,5 +101,31 @@ object PpiEngine {
             PpiModel.TransparentV0 -> null // Not applicable for transparent model
             PpiModel.PurdyV1 -> PpiCurvePurdy.getBaselineTime(distanceM)
         }
+    }
+    
+    /**
+     * Calculate PPI score using heart rate-based effort segmentation.
+     * This method segments the run based on heart rate variations and applies
+     * effort-based corrections to provide more accurate scoring.
+     * 
+     * @param distanceM Total distance in meters
+     * @param elapsedSec Total elapsed time in seconds
+     * @param heartRateData List of heart rate points throughout the run
+     * @param userMaxHR User's maximum heart rate
+     * @param baselineHR User's baseline heart rate (defaults to 60% of max)
+     * @param corr Additional corrections (elevation, temperature)
+     * @return Weighted average PPI score across heart rate segments
+     */
+    fun scoreWithHeartRate(
+        distanceM: Double,
+        elapsedSec: Double,
+        heartRateData: List<HeartRatePoint>?,
+        userMaxHR: Int,
+        baselineHR: Int = (userMaxHR * 0.6).toInt(),
+        corr: Corrections = Corrections()
+    ): Double {
+        return HeartRatePpiCalculator.calculateHeartRateBasedPPI(
+            distanceM, elapsedSec, heartRateData, userMaxHR, baselineHR, corr
+        )
     }
 }

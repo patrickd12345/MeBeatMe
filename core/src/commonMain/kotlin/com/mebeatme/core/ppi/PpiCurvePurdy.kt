@@ -46,7 +46,7 @@ object PpiCurvePurdy {
      * @return Corrected points score
      */
     fun correctedScore(distanceM: Double, elapsedSec: Double, corrections: Corrections): Double {
-        val adjustedTime = elapsedSec + corrections.elevationAdjSec + corrections.temperatureAdjSec
+        val adjustedTime = elapsedSec + corrections.elevationAdjSec + corrections.temperatureAdjSec + corrections.heartRateAdjSec
         return score(distanceM, adjustedTime)
     }
     
