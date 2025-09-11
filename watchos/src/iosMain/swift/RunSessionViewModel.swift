@@ -9,11 +9,22 @@ final class RunSessionViewModel: ObservableObject {
     @Published var elapsed: TimeInterval = 0
     @Published var paceDelta: Double = 0
     @Published var purdyScore: Double = 0
+    
+    // Properties for the simplified watch UI
+    var currentPPI: Double {
+        return purdyScore
+    }
+    
+    var timeToBeatTargetPPI: String {
+        guard let targetPPI = getTargetPPI() else { return "--" }
+        return calculateTimeToBeat(targetPPI: targetPPI)
+    }
 
     private let workoutService: WorkoutService
     private var cancellables = Set<AnyCancellable>()
 
     private var targetPace: Double = 0
+    private var targetPPI: Double = 0
 
     init(workoutService: WorkoutService = WorkoutService()) {
         print("🏃 RunSessionViewModel.init() called")
@@ -105,5 +116,58 @@ final class RunSessionViewModel: ObservableObject {
     /// Stops the active run.
     func stopRun() async {
         await workoutService.stop()
+    }
+    
+    /// Sets the target PPI to beat
+    func setTargetPPI(_ ppi: Double) {
+        targetPPI = ppi
+    }
+    
+    // MARK: - Helper methods for simplified UI
+    
+    private func getTargetPPI() -> Double? {
+        return targetPPI > 0 ? targetPPI : nil
+    }
+    
+    private func calculateTimeToBeat(targetPPI: Double) -> String {
+        guard liveDistance > 0 && elapsed > 0 else { return "--" }
+        
+        // Calculate current PPI
+        let currentPPI = purdyScore
+        
+        // If we're already at or above target, show "ACHIEVED"
+        if currentPPI >= targetPPI {
+            return "ACHIEVED"
+        }
+        
+        // Calculate how much more distance/time we need to reach target PPI
+        // Using the PPI engine to find required time for target score
+        let currentDistanceKm = liveDistance / 1000.0
+        let currentPaceSecPerKm = livePace
+        
+        // Estimate additional distance needed at current pace
+        // This is a simplified approach - we calculate how much more distance
+        // we'd need to run at current pace to reach target PPI
+        
+        // Calculate required time for target PPI at current distance
+        let requiredTimeForCurrentDistance = KMPBridge.requiredTimeFor(distanceM: liveDistance, targetScore: targetPPI)
+        
+        if requiredTimeForCurrentDistance <= elapsed {
+            return "ACHIEVED"
+        }
+        
+        // Calculate remaining time needed
+        let remainingTimeSeconds = requiredTimeForCurrentDistance - elapsed
+        
+        // Convert to minutes/hours
+        let remainingTimeMinutes = Int(remainingTimeSeconds / 60)
+        
+        if remainingTimeMinutes < 60 {
+            return "\(remainingTimeMinutes)m"
+        } else {
+            let hours = remainingTimeMinutes / 60
+            let minutes = remainingTimeMinutes % 60
+            return "\(hours)h \(minutes)m"
+        }
     }
 }

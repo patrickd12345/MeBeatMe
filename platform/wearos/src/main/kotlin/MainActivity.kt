@@ -153,48 +153,58 @@ fun LiveRunScreen(viewModel: MeBeatMeViewModel, vibrator: Vibrator) {
         verticalArrangement = Arrangement.Center
     ) {
         liveSession?.let { session ->
-            // Challenge info
-            Text(
-                text = session.choice.label,
-                style = MaterialTheme.typography.title2,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Progress ring
-            Box(
-                modifier = Modifier.size(120.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ProgressRing(
-                    progress = session.progressPercentage().toFloat(),
-                    modifier = Modifier.fillMaxSize()
-                )
-                
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Three key numbers
+            VStack(spacing: 20) {
+                // PPI to beat
+                VStack(spacing: 4) {
                     Text(
-                        text = formatPace(session.currentPaceSecPerKm.toInt()),
-                        style = MaterialTheme.typography.h6,
-                        fontWeight = FontWeight.Bold
+                        text = "PPI to Beat",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
                     )
+                    
                     Text(
-                        text = "Target: ${formatPace(session.choice.targetPaceSecPerKm)}",
-                        style = MaterialTheme.typography.caption
+                        text = "${viewModel.getTargetPPI().toInt()}",
+                        style = MaterialTheme.typography.h4,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Green
+                    )
+                }
+                
+                // Current PPI
+                VStack(spacing: 4) {
+                    Text(
+                        text = "Current PPI",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    
+                    Text(
+                        text = "${session.currentPPI.toInt()}",
+                        style = MaterialTheme.typography.h4,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Blue
+                    )
+                }
+                
+                // Time to reach PPI to beat
+                VStack(spacing: 4) {
+                    Text(
+                        text = "Time to Beat",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                    )
+                    
+                    Text(
+                        text = session.timeToBeatTargetPPI,
+                        style = MaterialTheme.typography.h4,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Orange
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Pace status
-            Text(
-                text = if (isOnTarget) "On Target! 🎯" else "Adjust Pace",
-                style = MaterialTheme.typography.body1,
-                color = if (isOnTarget) Color.Green else Color.Orange
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // Stop button
             Button(
