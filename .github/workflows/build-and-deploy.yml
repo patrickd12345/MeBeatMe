@@ -1,0 +1,237 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Test and Build Phase
+  test-and-build:
+    runs-on: ubuntu-latest
+    outputs:
+      build-success: ${{ steps.build-result.outputs.success }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+            
+      - name: Run Tests
+        run: |
+          echo "🧪 Running test suite..."
+          ./gradlew :shared:test :server:test :web:test
+          
+      - name: Build Web Assets
+        run: |
+          echo "🏗️ Building web assets..."
+          ./gradlew :web:build
+          
+      - name: Prepare Deployment Assets
+        run: |
+          echo "📦 Preparing deployment assets..."
+          mkdir -p dist
+          cp dashboard.html dist/
+          cp dashboard-vercel.html dist/
+          cp -r api dist/
+          cp vercel.json dist/
+          cp package.json dist/
+          
+      - name: Set Build Success
+        id: build-result
+        run: |
+          echo "✅ Build completed successfully!"
+          echo "success=true" >> $GITHUB_OUTPUT
+          
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-assets
+          path: dist/
+          retention-days: 7
+
+  # Build XCFramework (macOS only)
+  build-xcframework:
+    runs-on: macos-14
+    needs: test-and-build
+    if: needs.test-and-build.outputs.build-success == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+        
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/org.swift.swiftpm
+          key: spm-${{ runner.os }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
+            
+      - name: Preinstall watchOS runtime
+        run: |
+          xcrun xctrace list devices || true
+          sudo xcode-select -s /Applications/Xcode.app
+          /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -downloadPlatform watchOS
+            
+      - name: Build XCFramework
+        run: |
+          echo "📱 Building XCFramework..."
+          ./gradlew :shared:clean :shared:linkDebugFrameworkIosArm64 :shared:linkDebugFrameworkIosSimulatorArm64
+          
+          # Create XCFramework directory
+          mkdir -p shared/build/XCFrameworks/debug
+          
+          # Create XCFramework using xcodebuild
+          xcodebuild -create-xcframework \
+            -framework shared/build/bin/iosArm64/debugFramework/shared.framework \
+            -framework shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework \
+            -output shared/build/XCFrameworks/debug/Shared.xcframework
+        
+      - name: Upload XCFramework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shared.xcframework
+          path: shared/build/XCFrameworks/debug/Shared.xcframework
+          retention-days: 14
+
+  # Deploy to Vercel (only on main branch)
+  deploy-vercel:
+    runs-on: ubuntu-latest
+    needs: [test-and-build, build-xcframework]
+    if: github.ref == 'refs/heads/main' && needs.test-and-build.outputs.build-success == 'true'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-assets
+          path: dist/
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Deploy to Vercel
+        run: |
+          echo "🚀 Deploying to Vercel..."
+          cd dist
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          
+      - name: Notify Deployment Success
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Your app is live at: https://mebeatme.ready2race.run"
+
+  # Deploy Preview (for PRs)
+  deploy-preview:
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    if: github.event_name == 'pull_request' && needs.test-and-build.outputs.build-success == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-assets
+          path: dist/
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Deploy Preview to Vercel
+        run: |
+          echo "🔍 Deploying preview to Vercel..."
+          cd dist
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          
+      - name: Comment PR with Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: deployments } = await github.rest.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.sha,
+              per_page: 1
+            });
+            
+            if (deployments.length > 0) {
+              const { data: deploymentStatuses } = await github.rest.repos.listDeploymentStatuses({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployments[0].id,
+                per_page: 1
+              });
+              
+              if (deploymentStatuses.length > 0 && deploymentStatuses[0].target_url) {
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `🚀 **Preview deployed successfully!**\n\n🔗 **Preview URL:** ${deploymentStatuses[0].target_url}\n\n✅ All tests passed and the preview is ready for review.`
+                });
+              }
+            }

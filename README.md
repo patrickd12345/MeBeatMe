@@ -3,8 +3,10 @@
 A production-grade watchOS app with Purdy-based Personal Performance Index (PPI) system, designed for Windows-first development with macOS CI.
 
 ![KMP Artifacts](https://github.com/patrickd12345/MeBeatMe/actions/workflows/kmp-artifacts.yml/badge.svg)
+![Build and Deploy](https://github.com/patrickd12345/MeBeatMe/actions/workflows/build-and-deploy.yml/badge.svg)
 
 > **📋 State of the Union**: See [STATE_OF_THE_UNION.md](STATE_OF_THE_UNION.md) for current project status and next steps.
+> **🚀 Automatic Deployment**: Every successful compile automatically builds and deploys to production!
 
 ## 🏗️ Architecture
 
@@ -35,6 +37,25 @@ MeBeatMe/
 ```
 
 ## 🚀 Quick Start
+
+### 🎯 Automatic Build & Deploy
+
+**Every successful compile automatically:**
+- ✅ Runs all tests
+- 🏗️ Builds web assets and XCFramework  
+- 🚀 Deploys to production (main branch)
+- 📱 Creates preview deployments (PRs)
+
+**Setup once, deploy forever:**
+```bash
+# Windows
+.\scripts\setup-automatic-deployment.ps1
+
+# macOS/Linux  
+./scripts/setup-automatic-deployment.sh
+```
+
+**Live App:** https://mebeatme.ready2race.run
 
 ### Windows-First Development Workflow
 
