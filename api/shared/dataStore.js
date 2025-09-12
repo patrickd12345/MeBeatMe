@@ -1,29 +1,31 @@
-// Shared data store using in-memory storage (fallback for Vercel KV issues)
+// Shared data store using global state (persists across serverless function calls)
 // Initialize with hardcoded data and allow runtime additions
 
-// Initialize with default data
-let workoutData = {
-  sessions: [
-    {
-      id: 'hardcoded_run',
-      distance: 5940,
-      duration: 2498,
-      ppi: 355,
-      createdAt: 1757520000000,
-      name: 'Sample Run'
-    }
-  ],
-  bestPpi: 355
-};
+// Use global state that persists across Vercel serverless function calls
+if (!global.workoutData) {
+  global.workoutData = {
+    sessions: [
+      {
+        id: 'hardcoded_run',
+        distance: 5940,
+        duration: 2498,
+        ppi: 355,
+        createdAt: 1757520000000,
+        name: 'Sample Run'
+      }
+    ],
+    bestPpi: 355
+  };
+}
 
 async function getWorkoutData() {
-  return workoutData;
+  return global.workoutData;
 }
 
 async function persist(sessions) {
-  workoutData.sessions = sessions;
-  workoutData.bestPpi = sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0;
-  return workoutData;
+  global.workoutData.sessions = sessions;
+  global.workoutData.bestPpi = sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0;
+  return global.workoutData;
 }
 
 async function updateWorkoutData(newData) {
