@@ -35,3 +35,10 @@ java17.zip
 *.md
 !README.md
 !VERCEL_DEPLOYMENT_GUIDE.md
+
+# Ensure dist is not deployed. We deploy sources directly.
+dist/
+
+# Playwright artifacts
+playwright-report/
+test-results/

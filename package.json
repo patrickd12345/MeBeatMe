@@ -8,7 +8,7 @@
     "build": "echo 'Building for Vercel...' && echo 'Build timestamp:' && date && echo 'Build completed successfully'",
     "build:gradle": "gradlew :web:build",
     "build:web": "npm run copy:assets",
-    "copy:assets": "if not exist dist mkdir dist && copy dashboard.html dist\\ && copy dashboard-vercel.html dist\\ && xcopy api dist\\api\\ /E /I && copy vercel.json dist\\ && copy package.json dist\\",
+    "copy:assets": "if not exist dist mkdir dist && copy dashboard.html dist\\ && copy dashboard-vercel.html dist\\ && copy vercel.json dist\\ && copy package.json dist\\",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
     "preview": "vercel",
