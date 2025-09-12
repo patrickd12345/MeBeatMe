@@ -91,16 +91,27 @@ function renderResultPage(status, message, state, accessToken = null) {
 <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, sans-serif; padding:24px;">
   <p>${escapeHtml(message)}</p>
   <script>
-    try {
-      if (window.opener) {
-        console.log('Sending message to opener:', ${payload});
-        window.opener.postMessage(${payload}, '*');
-      }
-      setTimeout(function(){ window.close(); }, 1000);
-    } catch (e) { 
-      console.error('Error sending message:', e);
-      setTimeout(function(){ window.close(); }, 1000); 
-    }
+    // Wait for the page to be fully loaded before sending the message
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            console.log('Sending message to opener:', ${payload});
+            window.opener.postMessage(${payload}, '*');
+            console.log('Message sent successfully');
+          } else {
+            console.log('Opener window is closed or not available');
+          }
+        } catch (e) { 
+          console.error('Error sending message:', e);
+        }
+        
+        // Close the window after sending the message
+        setTimeout(function() { 
+          window.close(); 
+        }, 1000);
+      }, 500);
+    });
   </script>
 </body></html>`;
 }

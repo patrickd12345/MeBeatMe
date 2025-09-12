@@ -1289,6 +1289,24 @@
         `;
         document.head.appendChild(style);
         
+        // Global error handler to catch and suppress runtime.lastError
+        window.addEventListener('error', function(event) {
+            if (event.message && event.message.includes('runtime.lastError')) {
+                console.log('🔇 Suppressed runtime.lastError:', event.message);
+                event.preventDefault();
+                return false;
+            }
+        });
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && event.reason.message && event.reason.message.includes('runtime.lastError')) {
+                console.log('🔇 Suppressed unhandled promise rejection:', event.reason.message);
+                event.preventDefault();
+                return false;
+            }
+        });
+        
         // Load data on page load with a small delay to ensure page is ready
         setTimeout(() => {
             console.log('🚀 Page loaded, starting data load...');
@@ -1341,7 +1359,9 @@
             const messageHandler = (event) => {
                 console.log('📨 Received message from popup:', event.data);
                 
+                // Check if the message is from our Strava callback
                 if (!event || !event.data || typeof event.data !== 'object') return;
+                if (!event.data.type || !event.data.type.includes('strava-auth')) return;
                 
                 if (event.data.type === 'strava-auth-success') {
                     console.log('✅ Strava authentication successful!');
