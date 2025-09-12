@@ -1,5 +1,5 @@
 // Vercel serverless function for sync/bests endpoint
-import { getWorkoutData } from '../shared/dataStore.js';
+import { getWorkoutData } from '../dataStore.js';
 
 export default async function handler(req, res) {
   // Set CORS headers

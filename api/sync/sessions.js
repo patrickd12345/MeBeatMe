@@ -1,5 +1,5 @@
 // Vercel serverless function for sync/sessions endpoint
-import { getWorkoutData, addSession, deleteSession } from '../shared/dataStore.js';
+import { getWorkoutData, addSession, deleteSession } from '../dataStore.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
