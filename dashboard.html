@@ -495,7 +495,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏃‍♂️ MeBeatMe Dashboard v2.1 - $(date)</h1>
+        <h1>🏃‍♂️ MeBeatMe Dashboard v2.3 - Cache Bust</h1>
         
         <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
         <a href="fit-upload.html" class="upload-link">📁 Upload FIT File</a>
@@ -726,7 +726,7 @@
                 const card = document.createElement('div');
                 card.className = 'stat-card';
                 card.innerHTML = `
-                    <div class="stat-value">${ppi.toFixed(1)}</div>
+                    <div class="stat-value">${ppi ? ppi.toFixed(1) : 'N/A'}</div>
                     <div class="stat-label">${distance}</div>
                 `;
                 grid.appendChild(card);
@@ -959,7 +959,7 @@
                 item.innerHTML = `
                     <div class="session-header">
                         <div><strong>${session.filename ? session.filename : session.id}</strong></div>
-                        <div class="session-ppi">PPI: ${session.ppi.toFixed(1)}</div>
+                        <div class="session-ppi">PPI: ${session.ppi ? session.ppi.toFixed(1) : 'N/A'}</div>
                     </div>
                     <div class="session-details">
                         <div><strong>Distance:</strong> ${distanceKm} km</div>

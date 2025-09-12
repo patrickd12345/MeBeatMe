@@ -1,0 +1,193 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - heading "🏃‍♂️ MeBeatMe Dashboard v2.3 - Cache Bust" [level=1] [ref=e3]
+  - button "🔄 Refresh Data" [ref=e4] [cursor=pointer]
+  - link "📁 Upload FIT File" [ref=e5] [cursor=pointer]:
+    - /url: fit-upload.html
+  - button "✏️ Manual Workout" [ref=e6] [cursor=pointer]
+  - button "🏃‍♂️ Import from Strava" [ref=e7] [cursor=pointer]
+  - generic [ref=e8]:
+    - heading "📊 Your Best Performances" [level=2] [ref=e9]
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: "250.0"
+        - generic [ref=e13]: 3-8K
+      - generic [ref=e14]:
+        - generic [ref=e15]: "200.0"
+        - generic [ref=e16]: 1-3K
+    - heading "🎯 Workouts to Beat (Target PPI = 265.7)" [level=2] [ref=e17]:
+      - text: 🎯 Workouts to Beat (Target PPI =
+      - generic [ref=e18]: "265.7"
+      - text: )
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - text: Beat Your 5.9K Best
+          - generic [ref=e23]: CURRENT
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - strong [ref=e26]: "Distance:"
+            - text: 5.9 km
+          - generic [ref=e27]:
+            - strong [ref=e28]: "Current Pace:"
+            - text: 5:05/km
+          - generic [ref=e29]:
+            - strong [ref=e30]: "Target Pace:"
+            - text: 4:56/km
+          - generic [ref=e31]:
+            - strong [ref=e32]: "Duration:"
+            - text: 29:17
+          - generic [ref=e33]: Beat your 5.9km run by 3%
+        - generic [ref=e34]:
+          - strong [ref=e35]: "Required Pace:"
+          - text: 4:56/km to achieve target PPI
+      - generic [ref=e36]:
+        - generic [ref=e37]: Beat Your Best - Shorter Sprint
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - strong [ref=e40]: "Distance:"
+            - text: 4.2 km
+          - generic [ref=e41]:
+            - strong [ref=e42]: "Current Pace:"
+            - text: 4:59/km
+          - generic [ref=e43]:
+            - strong [ref=e44]: "Target Pace:"
+            - text: 4:50/km
+          - generic [ref=e45]:
+            - strong [ref=e46]: "Duration:"
+            - text: 20:04
+          - generic [ref=e47]: 4.2km sprint, 3% faster pace
+        - generic [ref=e48]:
+          - strong [ref=e49]: "Required Pace:"
+          - text: 4:50/km to achieve target PPI
+      - generic [ref=e50]:
+        - generic [ref=e51]: Beat Your Best - 10K Challenge
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - strong [ref=e54]: "Distance:"
+            - text: 10.0 km
+          - generic [ref=e55]:
+            - strong [ref=e56]: "Current Pace:"
+            - text: 5:14/km
+          - generic [ref=e57]:
+            - strong [ref=e58]: "Target Pace:"
+            - text: 5:05/km
+          - generic [ref=e59]:
+            - strong [ref=e60]: "Duration:"
+            - text: 50:48
+          - generic [ref=e61]: 10K distance, 3% faster pace
+        - generic [ref=e62]:
+          - strong [ref=e63]: "Required Pace:"
+          - text: 5:05/km to achieve target PPI
+      - generic [ref=e64]:
+        - generic [ref=e65]: Beat Your Best - 20K Endurance
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - strong [ref=e68]: "Distance:"
+            - text: 20.0 km
+          - generic [ref=e69]:
+            - strong [ref=e70]: "Current Pace:"
+            - text: 5:34/km
+          - generic [ref=e71]:
+            - strong [ref=e72]: "Target Pace:"
+            - text: 5:24/km
+          - generic [ref=e73]:
+            - strong [ref=e74]: "Duration:"
+            - text: 1:48:00
+          - generic [ref=e75]: 20K distance, 3% faster pace
+        - generic [ref=e76]:
+          - strong [ref=e77]: "Required Pace:"
+          - text: 5:24/km to achieve target PPI
+    - heading "📈 Recent Sessions" [level=2] [ref=e78]
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - strong [ref=e83]: Morning Run
+          - generic [ref=e84]: "PPI: 250.0"
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - strong [ref=e87]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e88]:
+            - strong [ref=e89]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e90]:
+            - strong [ref=e91]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e93] [cursor=pointer]
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - strong [ref=e97]: Evening Jog
+          - generic [ref=e98]: "PPI: 200.0"
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - strong [ref=e101]: "Distance:"
+            - text: 3.00 km
+          - generic [ref=e102]:
+            - strong [ref=e103]: "Duration:"
+            - text: 20.0 min
+          - generic [ref=e104]:
+            - strong [ref=e105]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e107] [cursor=pointer]
+    - heading "ℹ️ PPI Transparency" [level=2] [ref=e108]
+    - generic [ref=e109]:
+      - paragraph [ref=e110]:
+        - strong [ref=e111]: "Current PPI Model: Purdy v1 (Default)"
+      - paragraph [ref=e112]:
+        - strong [ref=e113]: "How your PPI is calculated:"
+      - list [ref=e114]:
+        - listitem [ref=e115]:
+          - strong [ref=e116]: "Distance:"
+          - text: Total meters covered in your run
+        - listitem [ref=e117]:
+          - strong [ref=e118]: "Time:"
+          - text: Total elapsed time in seconds
+        - listitem [ref=e119]:
+          - strong [ref=e120]: "Baseline Time:"
+          - text: Elite performance time for your distance
+        - listitem [ref=e121]:
+          - strong [ref=e122]: "Performance Ratio:"
+          - text: Baseline Time ÷ Your Time
+        - listitem [ref=e123]:
+          - strong [ref=e124]: "Purdy Formula:"
+          - text: 1000 × (Baseline Time ÷ Your Time)^(-2.0)
+        - listitem [ref=e125]:
+          - strong [ref=e126]: "Range:"
+          - text: PPI is capped between 100 and 2000
+      - paragraph [ref=e127]:
+        - strong [ref=e128]: "Elite Baseline Anchors:"
+      - list [ref=e129]:
+        - listitem [ref=e130]:
+          - strong [ref=e131]: "1500m:"
+          - text: 3:30 → 1000 points
+        - listitem [ref=e132]:
+          - strong [ref=e133]: "5000m:"
+          - text: 12:35 → 1000 points
+        - listitem [ref=e134]:
+          - strong [ref=e135]: "10000m:"
+          - text: 26:11 → 1000 points
+        - listitem [ref=e136]:
+          - strong [ref=e137]: "Half Marathon:"
+          - text: 59:00 → 1000 points
+        - listitem [ref=e138]:
+          - strong [ref=e139]: "Marathon:"
+          - text: 2:04:20 → 1000 points
+      - paragraph [ref=e140]:
+        - strong [ref=e141]: "Score Ranges:"
+      - list [ref=e142]:
+        - listitem [ref=e143]:
+          - strong [ref=e144]: "Elite Performance:"
+          - text: 1000 points (meets baseline)
+        - listitem [ref=e145]:
+          - strong [ref=e146]: "Competitive Performance:"
+          - text: 694 points (slower than elite)
+        - listitem [ref=e147]:
+          - strong [ref=e148]: "Recreational Performance:"
+          - text: 300-500 points
+        - listitem [ref=e149]:
+          - strong [ref=e150]: "Moderate Performance:"
+          - text: 100 points (minimum score)
+```

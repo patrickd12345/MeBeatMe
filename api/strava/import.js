@@ -15,14 +15,19 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Handle Strava activity import
     try {
+      console.log('=== STRAVA IMPORT DEBUG START ===');
       let { access_token, count = 10, type = 'Run', days = 30 } = req.body;
+      console.log('Request body:', { count, type, days, hasToken: !!access_token });
+      
       // Fallback: try read cookie if token not supplied in body
       if (!access_token && req.headers.cookie) {
         const m = /(?:^|; )strava_access_token=([^;]+)/.exec(req.headers.cookie);
         if (m) access_token = decodeURIComponent(m[1]);
+        console.log('Found token in cookie:', !!access_token);
       }
       
       if (!access_token) {
+        console.log('ERROR: No access token provided');
         res.status(400).json({
           success: false,
           error: 'No access token provided'
@@ -30,20 +35,25 @@ export default async function handler(req, res) {
         return;
       }
       
+      console.log('Using access token:', access_token.substring(0, 10) + '...');
+      
       // Calculate date range
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
+      console.log('Date range:', { startDate: startDate.toISOString(), endDate: endDate.toISOString() });
       
       // Fetch activities from Strava
-      const activitiesResponse = await fetch(
-        `https://www.strava.com/api/v3/athlete/activities?after=${Math.floor(startDate.getTime() / 1000)}&before=${Math.floor(endDate.getTime() / 1000)}&per_page=${count}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${access_token}`
-          }
+      const stravaUrl = `https://www.strava.com/api/v3/athlete/activities?after=${Math.floor(startDate.getTime() / 1000)}&before=${Math.floor(endDate.getTime() / 1000)}&per_page=${count}`;
+      console.log('Fetching from Strava URL:', stravaUrl);
+      
+      const activitiesResponse = await fetch(stravaUrl, {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
         }
-      );
+      });
+      
+      console.log('Strava API response status:', activitiesResponse.status);
       
       if (!activitiesResponse.ok) {
         const errorText = await activitiesResponse.text();
@@ -57,16 +67,24 @@ export default async function handler(req, res) {
       }
       
       const activities = await activitiesResponse.json();
+      console.log('Received activities from Strava:', activities.length, 'total activities');
+      console.log('Activity types:', activities.map(a => a.type).slice(0, 10));
       
       // Filter and process activities
-      const runActivities = activities
-        .filter(activity => activity.type === 'Run')
-        .map(activity => {
+      const runActivities = activities.filter(activity => activity.type === 'Run');
+      console.log('Filtered running activities:', runActivities.length);
+      
+      const processedActivities = [];
+      for (const activity of runActivities) {
+        try {
+          console.log('Processing activity:', activity.name, 'Distance:', activity.distance, 'Time:', activity.moving_time);
+          
           // Calculate PPI using the Purdy formula
           const distanceMeters = activity.distance;
           const timeSeconds = activity.moving_time;
           
           const ppi = calculatePPI(distanceMeters, timeSeconds);
+          console.log('Calculated PPI:', ppi);
           
           // Save to shared data store
           const sessionData = {
@@ -79,10 +97,11 @@ export default async function handler(req, res) {
             name: activity.name
           };
           
+          console.log('Saving session data:', sessionData);
           const savedSession = await addSession(sessionData);
-          console.log(`Saved session: ${savedSession.id} for activity: ${activity.name}`);
+          console.log(`✅ Saved session: ${savedSession.id} for activity: ${activity.name}`);
           
-          return {
+          processedActivities.push({
             id: activity.id,
             name: activity.name,
             distance: (distanceMeters / 1000).toFixed(2),
@@ -95,14 +114,26 @@ export default async function handler(req, res) {
             createdAtMs: new Date(activity.start_date).getTime(),
             success: true,
             sessionId: savedSession.id
-          };
-        });
+          });
+        } catch (error) {
+          console.error('Error processing activity:', activity.name, error);
+          processedActivities.push({
+            id: activity.id,
+            name: activity.name,
+            success: false,
+            error: error.message
+          });
+        }
+      }
+      
+      console.log('=== STRAVA IMPORT DEBUG END ===');
+      console.log('Final processed activities:', processedActivities.length);
       
       res.status(200).json({
         success: true,
-        imported: runActivities.length,
+        imported: processedActivities.filter(a => a.success).length,
         total: activities.length,
-        activities: runActivities
+        activities: processedActivities
       });
       
     } catch (error) {

@@ -103,3 +103,25 @@ app.listen(PORT, () => {
   console.log('Dashboard available at: http://localhost:3000');
   console.log('API endpoints available at: http://localhost:3000/api/*');
 });
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\nReceived SIGINT. Shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('\nReceived SIGTERM. Shutting down gracefully...');
+  process.exit(0);
+});
+
+// Prevent process from hanging on Ctrl+C
+process.on('SIGUSR1', () => {
+  console.log('\nReceived SIGUSR1. Shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGUSR2', () => {
+  console.log('\nReceived SIGUSR2. Shutting down gracefully...');
+  process.exit(0);
+});

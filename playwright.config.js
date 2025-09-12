@@ -55,11 +55,16 @@ module.exports = defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'node test-server.js',
+    command: 'node test-server-wrapper.js',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     stdout: 'pipe',
     stderr: 'pipe',
+    ignoreHTTPSErrors: true,
+    env: {
+      ...process.env,
+      NODE_ENV: 'test'
+    }
   },
 });
