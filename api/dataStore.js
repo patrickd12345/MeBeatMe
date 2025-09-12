@@ -52,7 +52,7 @@ async function deleteSession(sessionId) {
 }
 
 // Vercel API handler
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       res.status(200).json(data);
     } else if (req.method === 'POST') {
       const { action, ...params } = req.body;
-      
+
       if (action === 'addSession') {
         const session = await addSession(params.session);
         res.status(201).json(session);
@@ -91,9 +91,8 @@ export default async function handler(req, res) {
   }
 }
 
-export {
-  getWorkoutData,
-  updateWorkoutData,
-  addSession,
-  deleteSession
-};
+module.exports = handler;
+module.exports.getWorkoutData = getWorkoutData;
+module.exports.updateWorkoutData = updateWorkoutData;
+module.exports.addSession = addSession;
+module.exports.deleteSession = deleteSession;

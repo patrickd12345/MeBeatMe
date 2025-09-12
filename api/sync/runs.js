@@ -1,7 +1,7 @@
 // Vercel serverless function for sync/runs endpoint
-import { addSession, getWorkoutData, deleteSession } from '../dataStore.js';
+const { addSession, deleteSession } = require('../dataStore.js');
 
-export default function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -35,10 +35,10 @@ export default function handler(req, res) {
       };
       
       // Add to data store
-      const newSession = addSession(sessionData);
-      
+      const newSession = await addSession(sessionData);
+
       console.log(`New workout added: ${distance}m in ${time}s, PPI: ${ppi.toFixed(1)}`);
-      
+
       res.status(200).json({
         status: 'success',
         message: 'Workout added successfully',
@@ -58,8 +58,8 @@ export default function handler(req, res) {
     try {
       const workoutId = req.query.id || req.url.split('/').pop();
       
-      const deletedSession = deleteSession(workoutId);
-      
+      const deletedSession = await deleteSession(workoutId);
+
       if (deletedSession) {
         console.log(`Workout deleted: ${workoutId}`);
         res.status(200).json({
