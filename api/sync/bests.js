@@ -21,39 +21,31 @@ export default async function handler(req, res) {
   try {
     // Get real data from data store
     const workoutData = await getWorkoutData();
-    
-    // Calculate best PPIs by distance ranges (simplified for now)
+
+    // Build bests by actual distances (labels like "5.94 km") instead of legacy buckets
     const bests = {};
-    
-    // Group sessions by distance ranges and find best PPI for each
+
     workoutData.sessions.forEach(session => {
-      const distanceKm = session.distance / 1000;
-      let bucket;
-      
-      if (distanceKm <= 3) {
-        bucket = 'KM_1_3';
-      } else if (distanceKm <= 8) {
-        bucket = 'KM_3_8';
-      } else if (distanceKm <= 15) {
-        bucket = 'KM_8_15';
-      } else if (distanceKm <= 25) {
-        bucket = 'KM_15_25';
-      } else {
-        bucket = 'KM_25P';
-      }
-      
-      if (!bests[bucket] || session.ppi > bests[bucket]) {
-        bests[bucket] = session.ppi;
+      const distanceKm = (session.distance || 0) / 1000;
+      const label = `${distanceKm.toFixed(2)} km`;
+      const ppi = Number(session.ppi) || 0;
+      if (!bests[label] || ppi > bests[label]) {
+        bests[label] = ppi;
       }
     });
-    
+
+    // Also compute the single best PPI overall
+    const bestPpi = workoutData.sessions.length
+      ? Math.max(...workoutData.sessions.map(s => Number(s.ppi) || 0))
+      : 0;
+
     const bestsData = {
       status: 'success',
-      bests: bests,
-      bestPpi: workoutData.bestPpi,
+      bests,
+      bestPpi,
       lastUpdated: Date.now()
     };
-    
+
     res.status(200).json(bestsData);
     
   } catch (error) {

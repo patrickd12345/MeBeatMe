@@ -12,20 +12,16 @@ test.describe('Production Dashboard HTML Test', () => {
     // Get the page content
     const content = await page.content();
     
-    // Check if the page contains "Bucket:" (old code)
-    const hasBucket = content.includes('Bucket:');
-    console.log('Page contains "Bucket:":', hasBucket);
-    
-    // Check if the page contains the latest code (no bucket references)
-    const hasLatestCode = !content.includes('Bucket:');
-    console.log('Page has latest code (no bucket):', hasLatestCode);
+    // Ensure legacy bucket tokens are not present
+    const hasLegacyBucket = /KM_\d|KM_\d+_\d+|KM_\d+P/.test(content) || content.includes('Bucket:');
+    console.log('Page has legacy bucket tokens:', hasLegacyBucket);
     
     // Check for specific elements that should be in the latest code
     const hasSessionsList = content.includes('id="sessions-list"');
     console.log('Page has sessions-list:', hasSessionsList);
     
     // The page should not contain bucket references
-    expect(hasBucket).toBe(false);
+    expect(hasLegacyBucket).toBe(false);
     expect(hasSessionsList).toBe(true);
   });
 });

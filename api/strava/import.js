@@ -77,11 +77,14 @@ export default async function handler(req, res) {
       const processedActivities = [];
       for (const activity of runActivities) {
         try {
-          console.log('Processing activity:', activity.name, 'Distance:', activity.distance, 'Time:', activity.moving_time);
+          console.log('Processing activity:', activity.name, 'Distance(m):', activity.distance, 'moving_time(s):', activity.moving_time, 'elapsed_time(s):', activity.elapsed_time);
           
           // Calculate PPI using the Purdy formula
           const distanceMeters = activity.distance;
-          const timeSeconds = activity.moving_time;
+          // Use total elapsed time when available; fall back to moving time
+          const timeSeconds = (typeof activity.elapsed_time === 'number' && activity.elapsed_time > 0)
+            ? activity.elapsed_time
+            : activity.moving_time;
           
           const ppi = calculatePPI(distanceMeters, timeSeconds);
           console.log('Calculated PPI:', ppi);

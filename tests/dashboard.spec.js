@@ -34,14 +34,9 @@ test.describe('MeBeatMe Dashboard', () => {
     await expect(manualButton).toBeVisible();
   });
 
-  test('should not show bucket references', async ({ page }) => {
-    // Check that no bucket-related text is visible
+  test('should not show legacy bucket references', async ({ page }) => {
     await expect(page.locator('text=Bucket')).not.toBeVisible();
-    await expect(page.locator('text=KM_1_3')).not.toBeVisible();
-    await expect(page.locator('text=KM_3_8')).not.toBeVisible();
-    await expect(page.locator('text=KM_8_15')).not.toBeVisible();
-    await expect(page.locator('text=KM_15_25')).not.toBeVisible();
-    await expect(page.locator('text=KM_25P')).not.toBeVisible();
+    await expect(page.locator('text=KM_')).not.toBeVisible();
   });
 
   test('should handle data loading errors gracefully', async ({ page }) => {
