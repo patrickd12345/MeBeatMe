@@ -1320,21 +1320,60 @@
             const scope = 'read,activity:read';
             const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&approval_prompt=force`;
 
-            window.open(stravaAuthUrl, 'stravaAuth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+            console.log('🔗 Opening Strava authentication popup...');
+            const popup = window.open(stravaAuthUrl, 'stravaAuth', 'width=600,height=700,scrollbars=yes,resizable=yes');
 
-            const handler = (event) => {
+            if (!popup) {
+                showNotification('❌ Popup blocked. Please allow popups for this site.', 'error');
+                return;
+            }
+
+            // Check if popup is closed manually
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    console.log('🔄 Strava popup was closed manually');
+                    showNotification('ℹ️ Strava authentication cancelled', 'info');
+                }
+            }, 1000);
+
+            // Listen for messages from the popup
+            const messageHandler = (event) => {
+                console.log('📨 Received message from popup:', event.data);
+                
                 if (!event || !event.data || typeof event.data !== 'object') return;
+                
                 if (event.data.type === 'strava-auth-success') {
-                    window.removeEventListener('message', handler);
+                    console.log('✅ Strava authentication successful!');
+                    clearInterval(checkClosed);
+                    window.removeEventListener('message', messageHandler);
+                    
+                    // Store the token for the import
+                    stravaAccessToken = event.data.access_token || 'authenticated';
+                    
+                    // Switch to import section
                     document.getElementById('stravaAuthSection').style.display = 'none';
                     document.getElementById('stravaImportSection').style.display = 'block';
                     showNotification('✅ Connected to Strava. You can import now.', 'success');
+                    
                 } else if (event.data.type === 'strava-auth-error') {
-                    window.removeEventListener('message', handler);
-                    showNotification('❌ Strava authentication failed.', 'error');
+                    console.log('❌ Strava authentication failed:', event.data.message);
+                    clearInterval(checkClosed);
+                    window.removeEventListener('message', messageHandler);
+                    showNotification(`❌ Strava authentication failed: ${event.data.message}`, 'error');
                 }
             };
-            window.addEventListener('message', handler);
+            
+            window.addEventListener('message', messageHandler);
+            
+            // Cleanup after 5 minutes
+            setTimeout(() => {
+                clearInterval(checkClosed);
+                window.removeEventListener('message', messageHandler);
+                if (!popup.closed) {
+                    popup.close();
+                }
+            }, 300000);
         }
         
         async function exchangeCodeForToken(code) {
@@ -1376,10 +1415,13 @@
         }
         
         async function importStravaActivities() {
+            console.log('🚀 Starting Strava import...');
             
             const activityCount = document.getElementById('activityCount').value;
             const activityType = document.getElementById('activityType').value;
             const dateRange = document.getElementById('dateRange').value;
+            
+            console.log('Import settings:', { activityCount, activityType, dateRange });
             
             // Move to progress section
             document.getElementById('stravaImportSection').style.display = 'none';
@@ -1393,8 +1435,28 @@
                     type: activityType,
                     days: parseInt(dateRange)
                 };
-                if (stravaAccessToken) body.access_token = stravaAccessToken;
+                
+                // Use the stored access token or try to get it from cookies
+                if (stravaAccessToken && stravaAccessToken !== 'authenticated') {
+                    body.access_token = stravaAccessToken;
+                } else {
+                    // Try to get token from cookies via API
+                    try {
+                        const tokenResponse = await fetch('/api/strava/token');
+                        const tokenData = await tokenResponse.json();
+                        if (tokenData.access_token) {
+                            body.access_token = tokenData.access_token;
+                            console.log('✅ Got access token from API');
+                        } else {
+                            throw new Error('No access token available');
+                        }
+                    } catch (tokenError) {
+                        console.error('❌ Failed to get access token:', tokenError);
+                        throw new Error('Please authenticate with Strava first');
+                    }
+                }
 
+                console.log('📤 Sending import request...');
                 const response = await fetch('/api/strava/import', {
                     method: 'POST',
                     headers: {
@@ -1403,7 +1465,9 @@
                     body: JSON.stringify(body)
                 });
                 
+                console.log('📥 Import response status:', response.status);
                 const result = await response.json();
+                console.log('📥 Import result:', result);
                 
                 if (result.success) {
                     // Update progress

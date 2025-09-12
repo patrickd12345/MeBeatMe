@@ -73,14 +73,19 @@ export default async function handler(req, res) {
       expiresAt ? `strava_expires_at=${expiresAt}; ${common}` : `strava_expires_at=; Path=/; ${secure} HttpOnly; SameSite=Lax; Max-Age=0`
     ]);
 
-    res.status(200).send(renderResultPage('success', 'Strava connected. You can close this window.', state));
+    res.status(200).send(renderResultPage('success', 'Strava connected. You can close this window.', state, accessToken));
   } catch (error) {
     res.status(500).send(renderResultPage('error', 'Unexpected server error', ''));
   }
 }
 
-function renderResultPage(status, message, state) {
-  const payload = JSON.stringify({ type: status === 'success' ? 'strava-auth-success' : 'strava-auth-error', state, message });
+function renderResultPage(status, message, state, accessToken = null) {
+  const payload = JSON.stringify({ 
+    type: status === 'success' ? 'strava-auth-success' : 'strava-auth-error', 
+    state, 
+    message,
+    access_token: accessToken
+  });
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Strava Auth</title></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, sans-serif; padding:24px;">
@@ -88,11 +93,14 @@ function renderResultPage(status, message, state) {
   <script>
     try {
       if (window.opener) {
+        console.log('Sending message to opener:', ${payload});
         window.opener.postMessage(${payload}, '*');
       }
-      window.close();
-      setTimeout(function(){ window.location.href = '/dashboard.html'; }, 500);
-    } catch (e) { setTimeout(function(){ window.location.href = '/dashboard.html'; }, 500); }
+      setTimeout(function(){ window.close(); }, 1000);
+    } catch (e) { 
+      console.error('Error sending message:', e);
+      setTimeout(function(){ window.close(); }, 1000); 
+    }
   </script>
 </body></html>`;
 }
