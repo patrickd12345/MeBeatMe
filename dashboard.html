@@ -675,14 +675,24 @@
             const contentEl = document.getElementById('content');
             const errorEl = document.getElementById('error');
             
+            console.log('🔄 Starting loadData()...');
+            
             loadingEl.style.display = 'block';
             contentEl.style.display = 'none';
             errorEl.style.display = 'none';
             
             try {
+                console.log('📊 Loading best PPIs...');
                 // Load best PPIs
                 const bestsResponse = await fetch('/api/sync/bests');
+                console.log('Bests response status:', bestsResponse.status);
+                
+                if (!bestsResponse.ok) {
+                    throw new Error(`Bests API returned ${bestsResponse.status}: ${bestsResponse.statusText}`);
+                }
+                
                 const bestsData = await bestsResponse.json();
+                console.log('Bests data:', bestsData);
                 
                 if (bestsData.status === 'success') {
                     displayBests(bestsData.bests);
@@ -691,9 +701,17 @@
                     throw new Error('Failed to load best PPIs');
                 }
                 
+                console.log('📋 Loading recent sessions...');
                 // Load recent sessions
                 const sessionsResponse = await fetch('/api/sync/sessions');
+                console.log('Sessions response status:', sessionsResponse.status);
+                
+                if (!sessionsResponse.ok) {
+                    throw new Error(`Sessions API returned ${sessionsResponse.status}: ${sessionsResponse.statusText}`);
+                }
+                
                 const sessionsData = await sessionsResponse.json();
+                console.log('Sessions data:', sessionsData);
                 
                 if (sessionsData.status === 'success') {
                     displaySessions(sessionsData.sessions);
@@ -701,11 +719,12 @@
                     throw new Error('Failed to load sessions');
                 }
                 
+                console.log('✅ Data loaded successfully!');
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'block';
                 
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('❌ Error loading data:', error);
                 loadingEl.style.display = 'none';
                 errorEl.style.display = 'block';
                 errorEl.textContent = `Error loading data: ${error.message}`;
@@ -1270,8 +1289,11 @@
         `;
         document.head.appendChild(style);
         
-        // Load data on page load
-        loadData();
+        // Load data on page load with a small delay to ensure page is ready
+        setTimeout(() => {
+            console.log('🚀 Page loaded, starting data load...');
+            loadData();
+        }, 100);
         
         // Strava Integration Functions
         let stravaAccessToken = null;
