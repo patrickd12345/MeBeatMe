@@ -154,12 +154,6 @@ jobs:
           node-version: '18'
           cache: 'npm'
       
-      - name: Link Vercel project (production)
-        run: |
-          echo "🔗 Linking Vercel project for production..."
-          cd dist
-          vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
-          
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
         
@@ -167,6 +161,13 @@ jobs:
         run: |
           echo "🚀 Deploying to Vercel..."
           cd dist
+          echo "📁 Files in dist directory:"
+          ls -la
+          echo "📄 Dashboard.html content preview:"
+          head -5 dashboard.html
+          echo "🔗 Linking Vercel project..."
+          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
+          echo "🚀 Deploying to production..."
           vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
