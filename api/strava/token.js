@@ -11,6 +11,34 @@ export default async function handler(req, res) {
     return;
   }
   
+  // GET: return access token from cookies if present (used by dashboard)
+  if (req.method === 'GET') {
+    try {
+      const cookieHeader = req.headers.cookie || '';
+      const cookies = Object.fromEntries(cookieHeader.split(';').map(c => {
+        const idx = c.indexOf('=');
+        if (idx === -1) return [c.trim(), ''];
+        const name = c.slice(0, idx).trim();
+        const value = decodeURIComponent(c.slice(idx + 1));
+        return [name, value];
+      }));
+
+      const accessToken = cookies['strava_access_token'] || null;
+      const refreshToken = cookies['strava_refresh_token'] || null;
+      const expiresAt = cookies['strava_expires_at'] ? Number(cookies['strava_expires_at']) : null;
+
+      if (!accessToken) {
+        res.status(200).json({ success: false, error: 'No access token in cookies' });
+        return;
+      }
+
+      res.status(200).json({ success: true, access_token: accessToken, refresh_token: refreshToken, expires_at: expiresAt });
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Failed to read tokens from cookies', details: err.message });
+    }
+    return;
+  }
+
   if (req.method === 'POST') {
     // Handle Strava token exchange
     try {

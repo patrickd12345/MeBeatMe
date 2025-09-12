@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       const distance = workoutData.distanceMeters || 0;
       const time = workoutData.elapsedSeconds || 0;
       const timestamp = workoutData.startedAtEpochMs || Date.now();
+      const name = typeof workoutData.name === 'string' ? workoutData.name : undefined;
       
       // Calculate PPI using Purdy formula
       const ppi = calculatePPI(distance, time);
@@ -28,7 +29,8 @@ export default async function handler(req, res) {
         distance: distance,
         duration: time,
         ppi: ppi,
-        createdAt: timestamp
+        createdAt: timestamp,
+        ...(name ? { name } : {})
       };
       
       const newSession = await addSession(sessionData);
@@ -50,7 +52,7 @@ export default async function handler(req, res) {
   } else if (req.method === 'GET') {
     // Return session data with transformed fields for dashboard
     const workoutData = await getWorkoutData();
-    const transformedSessions = workoutData.sessions.map(session => ({
+    let storeSessions = workoutData.sessions.map(session => ({
       id: session.id,
       filename: session.name || session.id, // Use name if available, otherwise id
       distance: session.distance,
@@ -58,11 +60,37 @@ export default async function handler(req, res) {
       ppi: session.ppi,
       createdAt: session.createdAt
     }));
+
+    // Merge cookie-based session cache if present (to reflect recent imports immediately)
+    try {
+      const cookieHeader = req.headers.cookie || '';
+      const m = /(?:^|; )mbm_sessions=([^;]+)/.exec(cookieHeader);
+      if (m) {
+        const cached = JSON.parse(decodeURIComponent(m[1]));
+        if (Array.isArray(cached) && cached.length) {
+          const seen = new Set(storeSessions.map(s => s.id));
+          cached.forEach(s => {
+            if (s && s.id && !seen.has(s.id)) {
+              storeSessions.unshift({
+                id: s.id,
+                filename: s.name || s.id,
+                distance: s.distance,
+                duration: s.duration,
+                ppi: s.ppi,
+                createdAt: s.createdAt
+              });
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.log('Session cookie merge skipped:', e.message);
+    }
     
     const sessionsData = {
       status: 'success',
-      sessions: transformedSessions,
-      count: transformedSessions.length,
+      sessions: storeSessions,
+      count: storeSessions.length,
       bestPpi: workoutData.bestPpi
     };
     

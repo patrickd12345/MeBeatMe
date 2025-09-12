@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -714,24 +714,7 @@
                 console.log('Sessions data:', sessionsData);
                 
                 if (sessionsData.status === 'success') {
-                    // Merge server sessions with any locally cached optimistic imports
-                    let mergedSessions = sessionsData.sessions || [];
-                    try {
-                        const cached = localStorage.getItem('importedSessions');
-                        if (cached) {
-                            const localSessions = JSON.parse(cached);
-                            if (Array.isArray(localSessions) && localSessions.length) {
-                                // De-duplicate by id, prefer server copies
-                                const seen = new Set(mergedSessions.map(s => s.id));
-                                for (const s of localSessions) {
-                                    if (!seen.has(s.id)) mergedSessions.unshift(s);
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.log('Local cache merge skipped:', e.message);
-                    }
-                    displaySessions(mergedSessions);
+                    displaySessions(sessionsData.sessions);
                 } else {
                     throw new Error('Failed to load sessions');
                 }
@@ -1547,21 +1530,11 @@
                                 `;
                                 list.prepend(item);
                             });
-                            // Persist optimistic sessions locally to survive reload until server storage is configured
-                            try {
-                                const cached = localStorage.getItem('importedSessions');
-                                const existing = cached ? JSON.parse(cached) : [];
-                                const merged = [...optimisticSessions, ...(Array.isArray(existing) ? existing : [])];
-                                // De-duplicate by id
-                                const byId = new Map();
-                                merged.forEach(s => { if (s && s.id) byId.set(s.id, s); });
-                                localStorage.setItem('importedSessions', JSON.stringify(Array.from(byId.values())));
-                            } catch (e) {
-                                console.log('Local cache save failed:', e.message);
-                            }
                         }
                     }
-                    // Do not immediately reload; keep optimistic UI. Server persistence happens asynchronously.
+
+                    // Also refresh dashboard data to ensure consistency
+                    loadData();
                     
                     showNotification(`✅ Successfully imported ${result.imported} activities!`, 'success');
                     

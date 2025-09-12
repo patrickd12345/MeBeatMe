@@ -1,22 +1,42 @@
-// Shared data store using global state (persists across serverless function calls)
-// Initialize with hardcoded data and allow runtime additions
+// Shared data store using Vercel KV (if configured), with safe in-memory fallback
+import { kv as vercelKv } from '@vercel/kv';
 
-// Use global state that persists across Vercel serverless function calls
-if (!global.workoutData) {
-  global.workoutData = {
-    sessions: [],
-    bestPpi: 0
-  };
+const KV_ENABLED = Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) || Boolean(process.env.KV_URL);
+const KV_KEY = 'workoutData';
+
+// Fallback in-memory store (per function instance)
+if (!global.__fallbackWorkoutData) {
+  global.__fallbackWorkoutData = { sessions: [], bestPpi: 0 };
+}
+
+function computeBestPpi(sessions) {
+  return sessions.length ? Math.max(...sessions.map(s => Number(s.ppi) || 0)) : 0;
 }
 
 async function getWorkoutData() {
-  return global.workoutData;
+  if (KV_ENABLED) {
+    try {
+      const data = await vercelKv.get(KV_KEY);
+      if (data && typeof data === 'object') return data;
+    } catch (err) {
+      console.error('KV get error, falling back to memory:', err.message);
+    }
+  }
+  return global.__fallbackWorkoutData;
 }
 
 async function persist(sessions) {
-  global.workoutData.sessions = sessions;
-  global.workoutData.bestPpi = sessions.length ? Math.max(...sessions.map(s => s.ppi)) : 0;
-  return global.workoutData;
+  const state = { sessions, bestPpi: computeBestPpi(sessions) };
+  if (KV_ENABLED) {
+    try {
+      await vercelKv.set(KV_KEY, state);
+      return state;
+    } catch (err) {
+      console.error('KV set error, writing to memory fallback:', err.message);
+    }
+  }
+  global.__fallbackWorkoutData = state;
+  return state;
 }
 
 async function updateWorkoutData(newData) {
@@ -35,10 +55,10 @@ async function addSession(session) {
     };
     const sessions = [newSession, ...current.sessions];
     await persist(sessions);
-    console.log(`Successfully added session: ${newSession.id} to memory store`);
+    console.log(`Successfully added session: ${newSession.id} (${(newSession.distance/1000).toFixed(2)}km, PPI ${newSession.ppi})`);
     return newSession;
   } catch (error) {
-    console.error('Error adding session to memory store:', error);
+    console.error('Error adding session:', error);
     throw error;
   }
 }
@@ -51,7 +71,7 @@ async function deleteSession(sessionId) {
   return removed;
 }
 
-// Vercel API handler
+// Vercel API handler (optional utility endpoint)
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');

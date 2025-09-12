@@ -75,6 +75,7 @@ export default async function handler(req, res) {
       console.log('Filtered running activities:', runActivities.length);
       
       const processedActivities = [];
+      const cookieSessions = [];
       for (const activity of runActivities) {
         try {
           console.log('Processing activity:', activity.name, 'Distance(m):', activity.distance, 'moving_time(s):', activity.moving_time, 'elapsed_time(s):', activity.elapsed_time);
@@ -118,6 +119,16 @@ export default async function handler(req, res) {
             success: true,
             sessionId: savedSession.id
           });
+
+          // Add to cookie sessions (minimal fields to keep cookie small)
+          cookieSessions.push({
+            id: savedSession.id,
+            name: savedSession.name || activity.name,
+            distance: savedSession.distance,
+            duration: savedSession.duration,
+            ppi: savedSession.ppi,
+            createdAt: savedSession.createdAt
+          });
         } catch (error) {
           console.error('Error processing activity:', activity.name, error);
           processedActivities.push({
@@ -132,6 +143,25 @@ export default async function handler(req, res) {
       console.log('=== STRAVA IMPORT DEBUG END ===');
       console.log('Final processed activities:', processedActivities.length);
       
+      // Update cookie-based session cache so subsequent GET /api/sync/sessions can reflect imports immediately
+      try {
+        const existingCookie = req.headers.cookie || '';
+        let existingSessions = [];
+        const m = /(?:^|; )mbm_sessions=([^;]+)/.exec(existingCookie);
+        if (m) {
+          try { existingSessions = JSON.parse(decodeURIComponent(m[1])); } catch {}
+        }
+        const merged = [...cookieSessions, ...(Array.isArray(existingSessions) ? existingSessions : [])];
+        // De-duplicate by id and clamp to latest 200 entries
+        const byId = new Map();
+        for (const s of merged) { if (s && s.id) byId.set(s.id, s); }
+        const finalList = Array.from(byId.values()).slice(0, 200);
+        const cookieValue = encodeURIComponent(JSON.stringify(finalList));
+        res.setHeader('Set-Cookie', [`mbm_sessions=${cookieValue}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=31536000`]);
+      } catch (e) {
+        console.error('Failed to set mbm_sessions cookie:', e.message);
+      }
+
       res.status(200).json({
         success: true,
         imported: processedActivities.filter(a => a.success).length,
