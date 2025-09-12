@@ -165,8 +165,10 @@ jobs:
           ls -la
           echo "📄 Dashboard.html content preview:"
           head -5 dashboard.html
-          echo "🔗 Linking Vercel project..."
-          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
+          echo "📄 Vercel.json content:"
+          cat vercel.json
+          echo "🔗 Linking to existing Vercel project..."
+          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }} --project ${{ secrets.VERCEL_PROJECT_ID }}
           echo "🚀 Deploying to production..."
           vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
