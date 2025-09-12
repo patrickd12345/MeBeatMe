@@ -47,11 +47,15 @@ jobs:
         run: |
           echo "📦 Preparing deployment assets..."
           mkdir -p dist
+          # Copy files with timestamp to force cache busting
           cp dashboard.html dist/
           cp dashboard-vercel.html dist/
           cp -r api dist/
           cp vercel.json dist/
           cp package.json dist/
+          # Add build timestamp to force deployment
+          echo "Build completed at: $(date)" > dist/build-info.txt
+          echo "Git commit: ${{ github.sha }}" >> dist/build-info.txt
           
       - name: Set Build Success
         id: build-result
