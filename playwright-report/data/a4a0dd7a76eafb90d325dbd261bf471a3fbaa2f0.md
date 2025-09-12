@@ -1,0 +1,409 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - heading "🏃‍♂️ MeBeatMe Dashboard" [level=1] [ref=e3]
+  - button "🔄 Refresh Data" [ref=e4] [cursor=pointer]
+  - link "📁 Upload FIT File" [ref=e5]:
+    - /url: fit-upload.html
+  - button "✏️ Manual Workout" [ref=e6] [cursor=pointer]
+  - button "🏃‍♂️ Import from Strava" [ref=e7] [cursor=pointer]
+  - generic [ref=e8]:
+    - heading "📊 Your Best Performances" [level=2] [ref=e9]
+    - generic [ref=e12]: "355.0"
+    - heading "🎯 Workouts to Beat (Target PPI = 377.3)" [level=2] [ref=e13]:
+      - text: 🎯 Workouts to Beat (Target PPI =
+      - generic [ref=e14]: "377.3"
+      - text: )
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - text: Beat Your 5.9K Best
+          - generic [ref=e19]: CURRENT
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - strong [ref=e22]: "Distance:"
+            - text: 5.9 km
+          - generic [ref=e23]:
+            - strong [ref=e24]: "Current Pace:"
+            - text: 4:16/km
+          - generic [ref=e25]:
+            - strong [ref=e26]: "Target Pace:"
+            - text: 4:08/km
+          - generic [ref=e27]:
+            - strong [ref=e28]: "Duration:"
+            - text: 24:35
+          - generic [ref=e29]: Beat your 5.9km run by 3%
+        - generic [ref=e30]:
+          - strong [ref=e31]: "Required Pace:"
+          - text: 4:08/km to achieve target PPI
+      - generic [ref=e32]:
+        - generic [ref=e33]: Beat Your Best - Shorter Sprint
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - strong [ref=e36]: "Distance:"
+            - text: 4.2 km
+          - generic [ref=e37]:
+            - strong [ref=e38]: "Current Pace:"
+            - text: 4:11/km
+          - generic [ref=e39]:
+            - strong [ref=e40]: "Target Pace:"
+            - text: 4:03/km
+          - generic [ref=e41]:
+            - strong [ref=e42]: "Duration:"
+            - text: 16:50
+          - generic [ref=e43]: 4.2km sprint, 3% faster pace
+        - generic [ref=e44]:
+          - strong [ref=e45]: "Required Pace:"
+          - text: 4:03/km to achieve target PPI
+      - generic [ref=e46]:
+        - generic [ref=e47]: Beat Your Best - 10K Challenge
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - strong [ref=e50]: "Distance:"
+            - text: 10.0 km
+          - generic [ref=e51]:
+            - strong [ref=e52]: "Current Pace:"
+            - text: 4:24/km
+          - generic [ref=e53]:
+            - strong [ref=e54]: "Target Pace:"
+            - text: 4:16/km
+          - generic [ref=e55]:
+            - strong [ref=e56]: "Duration:"
+            - text: 42:38
+          - generic [ref=e57]: 10K distance, 3% faster pace
+        - generic [ref=e58]:
+          - strong [ref=e59]: "Required Pace:"
+          - text: 4:16/km to achieve target PPI
+      - generic [ref=e60]:
+        - generic [ref=e61]: Beat Your Best - 20K Endurance
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - strong [ref=e64]: "Distance:"
+            - text: 20.0 km
+          - generic [ref=e65]:
+            - strong [ref=e66]: "Current Pace:"
+            - text: 4:40/km
+          - generic [ref=e67]:
+            - strong [ref=e68]: "Target Pace:"
+            - text: 4:32/km
+          - generic [ref=e69]:
+            - strong [ref=e70]: "Duration:"
+            - text: 1:30:38
+          - generic [ref=e71]: 20K distance, 3% faster pace
+        - generic [ref=e72]:
+          - strong [ref=e73]: "Required Pace:"
+          - text: 4:32/km to achieve target PPI
+    - heading "📈 Recent Sessions" [level=2] [ref=e74]
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - strong [ref=e79]: undefined
+          - generic [ref=e80]: "PPI: 355.0"
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - strong [ref=e83]: "Distance:"
+            - text: 5.94 km
+          - generic [ref=e84]:
+            - strong [ref=e85]: "Duration:"
+            - text: 41.6 min
+          - generic [ref=e86]:
+            - strong [ref=e87]: "Bucket:"
+            - text: undefined
+          - generic [ref=e88]:
+            - strong [ref=e89]: "Date:"
+            - text: 9/10/2025
+        - button "🗑️ Delete" [ref=e91] [cursor=pointer]
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - strong [ref=e95]: undefined
+          - generic [ref=e96]: "PPI: 73.8"
+        - generic [ref=e97]:
+          - generic [ref=e98]:
+            - strong [ref=e99]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e100]:
+            - strong [ref=e101]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e102]:
+            - strong [ref=e103]: "Bucket:"
+            - text: undefined
+          - generic [ref=e104]:
+            - strong [ref=e105]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e107] [cursor=pointer]
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - strong [ref=e111]: undefined
+          - generic [ref=e112]: "PPI: 73.8"
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - strong [ref=e115]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e116]:
+            - strong [ref=e117]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e118]:
+            - strong [ref=e119]: "Bucket:"
+            - text: undefined
+          - generic [ref=e120]:
+            - strong [ref=e121]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e123] [cursor=pointer]
+      - generic [ref=e124]:
+        - generic [ref=e125]:
+          - strong [ref=e127]: undefined
+          - generic [ref=e128]: "PPI: 73.8"
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - strong [ref=e131]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e132]:
+            - strong [ref=e133]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e134]:
+            - strong [ref=e135]: "Bucket:"
+            - text: undefined
+          - generic [ref=e136]:
+            - strong [ref=e137]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e139] [cursor=pointer]
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - strong [ref=e143]: undefined
+          - generic [ref=e144]: "PPI: 73.8"
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - strong [ref=e147]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e148]:
+            - strong [ref=e149]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e150]:
+            - strong [ref=e151]: "Bucket:"
+            - text: undefined
+          - generic [ref=e152]:
+            - strong [ref=e153]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e155] [cursor=pointer]
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - strong [ref=e159]: undefined
+          - generic [ref=e160]: "PPI: 73.8"
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - strong [ref=e163]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e164]:
+            - strong [ref=e165]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e166]:
+            - strong [ref=e167]: "Bucket:"
+            - text: undefined
+          - generic [ref=e168]:
+            - strong [ref=e169]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e171] [cursor=pointer]
+      - generic [ref=e172]:
+        - generic [ref=e173]:
+          - strong [ref=e175]: undefined
+          - generic [ref=e176]: "PPI: 73.8"
+        - generic [ref=e177]:
+          - generic [ref=e178]:
+            - strong [ref=e179]: "Distance:"
+            - text: 5.00 km
+          - generic [ref=e180]:
+            - strong [ref=e181]: "Duration:"
+            - text: 30.0 min
+          - generic [ref=e182]:
+            - strong [ref=e183]: "Bucket:"
+            - text: undefined
+          - generic [ref=e184]:
+            - strong [ref=e185]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e187] [cursor=pointer]
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - strong [ref=e191]: undefined
+          - generic [ref=e192]: "PPI: 48.9"
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - strong [ref=e195]: "Distance:"
+            - text: 3.00 km
+          - generic [ref=e196]:
+            - strong [ref=e197]: "Duration:"
+            - text: 20.0 min
+          - generic [ref=e198]:
+            - strong [ref=e199]: "Bucket:"
+            - text: undefined
+          - generic [ref=e200]:
+            - strong [ref=e201]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e203] [cursor=pointer]
+      - generic [ref=e204]:
+        - generic [ref=e205]:
+          - strong [ref=e207]: undefined
+          - generic [ref=e208]: "PPI: 48.9"
+        - generic [ref=e209]:
+          - generic [ref=e210]:
+            - strong [ref=e211]: "Distance:"
+            - text: 3.00 km
+          - generic [ref=e212]:
+            - strong [ref=e213]: "Duration:"
+            - text: 20.0 min
+          - generic [ref=e214]:
+            - strong [ref=e215]: "Bucket:"
+            - text: undefined
+          - generic [ref=e216]:
+            - strong [ref=e217]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e219] [cursor=pointer]
+      - generic [ref=e220]:
+        - generic [ref=e221]:
+          - strong [ref=e223]: undefined
+          - generic [ref=e224]: "PPI: 83.1"
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - strong [ref=e227]: "Distance:"
+            - text: 10.00 km
+          - generic [ref=e228]:
+            - strong [ref=e229]: "Duration:"
+            - text: 60.0 min
+          - generic [ref=e230]:
+            - strong [ref=e231]: "Bucket:"
+            - text: undefined
+          - generic [ref=e232]:
+            - strong [ref=e233]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e235] [cursor=pointer]
+      - generic [ref=e236]:
+        - generic [ref=e237]:
+          - strong [ref=e239]: undefined
+          - generic [ref=e240]: "PPI: 83.1"
+        - generic [ref=e241]:
+          - generic [ref=e242]:
+            - strong [ref=e243]: "Distance:"
+            - text: 10.00 km
+          - generic [ref=e244]:
+            - strong [ref=e245]: "Duration:"
+            - text: 60.0 min
+          - generic [ref=e246]:
+            - strong [ref=e247]: "Bucket:"
+            - text: undefined
+          - generic [ref=e248]:
+            - strong [ref=e249]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e251] [cursor=pointer]
+      - generic [ref=e252]:
+        - generic [ref=e253]:
+          - strong [ref=e255]: undefined
+          - generic [ref=e256]: "PPI: 83.1"
+        - generic [ref=e257]:
+          - generic [ref=e258]:
+            - strong [ref=e259]: "Distance:"
+            - text: 10.00 km
+          - generic [ref=e260]:
+            - strong [ref=e261]: "Duration:"
+            - text: 60.0 min
+          - generic [ref=e262]:
+            - strong [ref=e263]: "Bucket:"
+            - text: undefined
+          - generic [ref=e264]:
+            - strong [ref=e265]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e267] [cursor=pointer]
+      - generic [ref=e268]:
+        - generic [ref=e269]:
+          - strong [ref=e271]: undefined
+          - generic [ref=e272]: "PPI: 83.1"
+        - generic [ref=e273]:
+          - generic [ref=e274]:
+            - strong [ref=e275]: "Distance:"
+            - text: 10.00 km
+          - generic [ref=e276]:
+            - strong [ref=e277]: "Duration:"
+            - text: 60.0 min
+          - generic [ref=e278]:
+            - strong [ref=e279]: "Bucket:"
+            - text: undefined
+          - generic [ref=e280]:
+            - strong [ref=e281]: "Date:"
+            - text: 9/12/2025
+        - button "🗑️ Delete" [ref=e283] [cursor=pointer]
+    - heading "ℹ️ PPI Transparency" [level=2] [ref=e284]
+    - generic [ref=e285]:
+      - paragraph [ref=e286]:
+        - strong [ref=e287]: "Current PPI Model: Purdy v1 (Default)"
+      - paragraph [ref=e288]:
+        - strong [ref=e289]: "How your PPI is calculated:"
+      - list [ref=e290]:
+        - listitem [ref=e291]:
+          - strong [ref=e292]: "Distance:"
+          - text: Total meters covered in your run
+        - listitem [ref=e293]:
+          - strong [ref=e294]: "Time:"
+          - text: Total elapsed time in seconds
+        - listitem [ref=e295]:
+          - strong [ref=e296]: "Baseline Time:"
+          - text: Elite performance time for your distance
+        - listitem [ref=e297]:
+          - strong [ref=e298]: "Performance Ratio:"
+          - text: Baseline Time ÷ Your Time
+        - listitem [ref=e299]:
+          - strong [ref=e300]: "Purdy Formula:"
+          - text: 1000 × (Baseline Time ÷ Your Time)^(-2.0)
+        - listitem [ref=e301]:
+          - strong [ref=e302]: "Range:"
+          - text: PPI is capped between 100 and 2000
+      - paragraph [ref=e303]:
+        - strong [ref=e304]: "Elite Baseline Anchors:"
+      - list [ref=e305]:
+        - listitem [ref=e306]:
+          - strong [ref=e307]: "1500m:"
+          - text: 3:30 → 1000 points
+        - listitem [ref=e308]:
+          - strong [ref=e309]: "5000m:"
+          - text: 12:35 → 1000 points
+        - listitem [ref=e310]:
+          - strong [ref=e311]: "10000m:"
+          - text: 26:11 → 1000 points
+        - listitem [ref=e312]:
+          - strong [ref=e313]: "Half Marathon:"
+          - text: 59:00 → 1000 points
+        - listitem [ref=e314]:
+          - strong [ref=e315]: "Marathon:"
+          - text: 2:04:20 → 1000 points
+      - paragraph [ref=e316]:
+        - strong [ref=e317]: "Score Ranges:"
+      - list [ref=e318]:
+        - listitem [ref=e319]:
+          - strong [ref=e320]: "Elite Performance:"
+          - text: 1000 points (meets baseline)
+        - listitem [ref=e321]:
+          - strong [ref=e322]: "Competitive Performance:"
+          - text: 694 points (slower than elite)
+        - listitem [ref=e323]:
+          - strong [ref=e324]: "Recreational Performance:"
+          - text: 300-500 points
+        - listitem [ref=e325]:
+          - strong [ref=e326]: "Moderate Performance:"
+          - text: 100 points (minimum score)
+      - paragraph [ref=e327]:
+        - strong [ref=e328]: "Distance Buckets:"
+      - list [ref=e329]:
+        - listitem [ref=e330]:
+          - strong [ref=e331]: "KM_1_3:"
+          - text: 1-3 kilometers
+        - listitem [ref=e332]:
+          - strong [ref=e333]: "KM_3_8:"
+          - text: 3-8 kilometers
+        - listitem [ref=e334]:
+          - strong [ref=e335]: "KM_8_15:"
+          - text: 8-15 kilometers
+        - listitem [ref=e336]:
+          - strong [ref=e337]: "KM_15_25:"
+          - text: 15-25 kilometers
+        - listitem [ref=e338]:
+          - strong [ref=e339]: "KM_25P:"
+          - text: 25+ kilometers
+```
