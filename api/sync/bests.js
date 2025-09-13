@@ -1,5 +1,9 @@
 // Vercel serverless function for sync/bests endpoint - FIXED VERSION
-console.log("Bests API v2.1 at 2025-01-13T12:30:00Z - NO SUPABASE DEPENDENCIES");
+console.log("Bests API v2.2 at 2025-01-13T12:35:00Z - SUPABASE COMPLETELY DISABLED");
+
+// Force disable Supabase regardless of environment variables
+process.env.SUPABASE_URL = undefined;
+process.env.SUPABASE_SERVICE_ROLE_KEY = undefined;
 
 export default async function handler(req, res) {
   // Set CORS headers
