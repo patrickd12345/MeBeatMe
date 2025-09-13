@@ -2,7 +2,6 @@
   "name": "mebeatme",
   "version": "1.0.0",
   "description": "MeBeatMe - Personal Performance Index Dashboard",
-  "main": "dashboard.html",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Building for Vercel...' && echo 'Build timestamp:' && date && echo 'Build completed successfully'",
