@@ -1,6 +1,6 @@
 // Vercel serverless function for Strava activity import
-import { addSession } from '../dataStore.js';
-export default async function handler(req, res) {
+const { addSession } = require('../dataStore.js');
+module.exports = async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
