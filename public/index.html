@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeBeatMe Dashboard</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <h1>MeBeatMe Dashboard</h1>
+    <p>Dashboard is loading...</p>
+    <script>
+        // Simple test to verify API is working
+        fetch('/api/bests_v2')
+            .then(response => response.json())
+            .then(data => {
+                document.body.innerHTML += '<p>API Status: ' + data.message + '</p>';
+            })
+            .catch(error => {
+                document.body.innerHTML += '<p>API Error: ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html>

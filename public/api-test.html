@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test Page</h1>
+    <div id="results"></div>
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            try {
+                const response = await fetch('/api/bests_v2');
+                const data = await response.json();
+                results.innerHTML = '<p style="color: green;">✅ API Working: ' + data.message + '</p>';
+            } catch (error) {
+                results.innerHTML = '<p style="color: red;">❌ API Error: ' + error.message + '</p>';
+            }
+        }
+        testAPI();
+    </script>
+</body>
+</html>
