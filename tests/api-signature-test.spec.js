@@ -17,6 +17,6 @@ test.describe('API Signature Test', () => {
     }
     
     // The signature should appear in Vercel logs if our code is deployed
-    console.log('Check Vercel logs for: "Bests API v2.1 at 2025-01-13T12:30:00Z - NO SUPABASE DEPENDENCIES"');
+    console.log('Check Vercel logs for: "Bests API v2.2 at 2025-01-13T12:35:00Z - SUPABASE COMPLETELY DISABLED"');
   });
 });
