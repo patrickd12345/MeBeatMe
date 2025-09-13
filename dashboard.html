@@ -690,7 +690,7 @@
                 // Load best PPIs with fallback
                 let bestsData;
                 try {
-                    const bestsResponse = await fetch('/api/sync/bests');
+                    const bestsResponse = await fetch('/api/sync/bests_v2');
                     console.log('Bests response status:', bestsResponse.status);
                     
                     if (!bestsResponse.ok) {
