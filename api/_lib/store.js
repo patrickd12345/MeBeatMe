@@ -3,7 +3,8 @@
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+// Temporarily disable Supabase to force fallback to in-memory store
+const SUPABASE_ENABLED = false; // Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 
 function supabaseHeaders() {
   return {
