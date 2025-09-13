@@ -1,4 +1,6 @@
 // Vercel serverless function for sync/bests endpoint - FIXED VERSION
+console.log("Bests API v2.1 at 2025-01-13T12:30:00Z - NO SUPABASE DEPENDENCIES");
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
